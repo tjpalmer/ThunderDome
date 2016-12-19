@@ -3,7 +3,7 @@ package virassan.entities.statics;
 import java.awt.image.BufferedImage;
 
 import virassan.entities.Entity;
-import virassan.entities.creatures.Stats;
+import virassan.entities.creatures.utils.Stats;
 import virassan.main.Handler;
 import virassan.main.ID;
 

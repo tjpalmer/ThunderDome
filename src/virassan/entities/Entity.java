@@ -71,8 +71,7 @@ public abstract class Entity {
 
 	public abstract void tick();
 	public abstract void render(Graphics g);
-	public abstract void setDamaged(boolean b);
-	
+	public abstract void unPause();
 	
 	
 	//GETTERS AND SETTERS

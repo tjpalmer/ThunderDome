@@ -1,16 +1,15 @@
 package virassan.entities.creatures.enemies;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import virassan.entities.creatures.Attack;
-import virassan.entities.creatures.Stats;
 import virassan.gfx.Animation;
 import virassan.gfx.Assets;
 import virassan.items.Drop;
-import virassan.items.Item;
 import virassan.main.Handler;
 import virassan.main.ID;
 
@@ -19,17 +18,21 @@ public class Soldier extends Enemy{
 	private BufferedImage sprite;
 	private float spawnX, spawnY;
 	
-	public Soldier(Handler handler, float x, float y, ID id, EnemyType type, int level) {
-		super(handler, x, y, level, id, type);
+	public Soldier(Handler handler, String name, float x, float y, ID id, EnemyType type, EnemySpecies species, int level, Drop[] drops) {
+		super(handler, name, x, y, level, id, type, species);
 		aggroDistance = (int)(Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2))) * 3;
-		this.maxHealth = 50;
-		stats = new Stats(this, maxHealth);
+		stats.setEntity(this);
+		stats.setMaxHealth(70 + (level * 5));
+		stats.setLevel(level);
+		stats.setArmorRating(2 * level);
+		stats.setCritChance(0.00001F * level);
+		stats.setCritMult(0.005F * level);
 		damaged = false;
 		isMoving = false;
 		
 		direction = new Random().nextInt(4);
 		walking = new Animation[5];
-		drops = new Drop[]{new Drop(Item.APPLE, 0.98), new Drop(Item.TOAST, 0.55)};
+		this.drops = drops;
 		this.spawnX = x;
 		this.spawnY = y;		
 		
@@ -54,7 +57,7 @@ public class Soldier extends Enemy{
 		walking[3] = walkLeft;
 		animation = walkDown;
 		
-		defaultAttack = new Attack(700, 10, animation, 25, 25, "Default");
+		defaultAttack = new Attack(900, 3 * level, animation, 25, 25, "Default");
 		
 		//Moving Bounds
 		walkBounds.x = (int)(spawnX  - handler.getGameCamera().getxOffset()- type.getWidth()*5);
@@ -82,8 +85,12 @@ public class Soldier extends Enemy{
 		}else
 			g.drawImage(sprite, (int) (x - handler.getGameCamera().getxOffset()), (int) (y - handler.getGameCamera().getyOffset()), null);
 		stats.render(g);
-		g.setColor(Color.CYAN);
+		/* Display's the coords of the entity above their head
 		g.drawString(x + " " + y, (int)(x - handler.getGameCamera().getxOffset())-14, (int)(y - handler.getGameCamera().getyOffset()) - 5);
+		*/
+		g.setColor(Color.YELLOW);
+		g.setFont(new Font("Verdana", Font.PLAIN, 12));
+		g.drawString(name, (int)(x - handler.getGameCamera().getxOffset()), (int)(y - handler.getGameCamera().getyOffset()+2));
 	}
 
 	
@@ -101,4 +108,8 @@ public class Soldier extends Enemy{
 		
 	}
 
+	public String toString(){
+		return name;
+	}
+	
 }

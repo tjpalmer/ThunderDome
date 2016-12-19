@@ -7,6 +7,7 @@ import java.awt.image.BufferStrategy;
 import virassan.gfx.Assets;
 import virassan.gfx.GameCamera;
 import virassan.input.KeyInput;
+import virassan.input.MouseInput;
 import virassan.states.State;
 import virassan.states.StateManager;
 import virassan.world.World;
@@ -41,6 +42,7 @@ public class Game implements Runnable{
 	
 	//Input
 	private KeyInput keyManager;
+	private MouseInput mouseManager;
 	
 	//Camera
 	private GameCamera gameCamera;
@@ -56,6 +58,7 @@ public class Game implements Runnable{
 		this.height = height;
 		this.title = title;
 		keyManager = new KeyInput();
+		mouseManager = new MouseInput();
 	}
 	
 	/**
@@ -64,14 +67,20 @@ public class Game implements Runnable{
 	public void init(){
 		display = new Display(title);
 		display.getFrame().addKeyListener(keyManager);
+		display.getFrame().addMouseListener(mouseManager);
+		display.getFrame().addMouseMotionListener(mouseManager);
+		display.getCanvas().addMouseListener(mouseManager);
+		display.getCanvas().addMouseMotionListener(mouseManager);
 		handler = new Handler(this);
 		Assets.init();
 		gameCamera = new GameCamera(handler, 0,0);
 		//stateManager = new StateManager(handler, this);
 		//stateManager.init();
-		testWorld = new World(handler);
+		testWorld = (new World(handler, "res/worlds/maps/world3.txt"));
+		/*
 		handler.setWorld(testWorld);
 		handler.getWorld().setMap("res/worlds/maps/world2.txt");
+		*/
 	}
 	
 	/**
@@ -79,6 +88,7 @@ public class Game implements Runnable{
 	 */
 	public void tick(){
 		keyManager.tick();
+		mouseManager.tick();
 		/*
 		if(stateManager != null){
 			stateManager.tick();
@@ -144,7 +154,6 @@ public class Game implements Runnable{
 			}
 			
 			if(timer >= 1000000000){
-				System.out.println("Ticks and Frames: " + ticks);
 				TICK = ticks;
 				ticks = 0;
 				timer = 0;
@@ -160,6 +169,10 @@ public class Game implements Runnable{
 	
 	public KeyInput getKeyInput(){
 		return keyManager;
+	}
+	
+	public MouseInput getMouseInput(){
+		return mouseManager;
 	}
 	
 	public GameCamera getGameCamera(){
@@ -201,5 +214,9 @@ public class Game implements Runnable{
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public World getTestWorld() {
+		return testWorld;
 	}
 }

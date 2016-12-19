@@ -3,10 +3,8 @@ package virassan.entities.creatures.enemies;
 import java.awt.Color;
 import java.util.Random;
 
-import virassan.entities.Entity;
 import virassan.entities.creatures.Attack;
 import virassan.entities.creatures.Creature;
-import virassan.entities.creatures.Player;
 import virassan.gfx.Animation;
 import virassan.gfx.hud.BouncyText;
 import virassan.items.Drop;
@@ -18,7 +16,7 @@ public abstract class Enemy extends Creature{
 
 	public static final int SOLDIER_WIDTH = 32, SOLDIER_HEIGHT = 32;
 	
-	
+	protected EnemySpecies species;
 	protected EnemyType type;
 	protected int exp;
 	protected Drop[] drops;
@@ -35,11 +33,12 @@ public abstract class Enemy extends Creature{
 	protected Attack defaultAttack;
 	protected int aggroDistance;
 	
-	public Enemy(Handler handler, float x, float y, int level, ID id, EnemyType type) {
-		super(handler, x, y, type.getWidth(), type.getHeight(), level, id);
+	public Enemy(Handler handler, String name, float x, float y, int level, ID id, EnemyType type, EnemySpecies species) {
+		super(handler, name, x, y, type.getWidth(), type.getHeight(), level, id);
 		this.type = type;
+		this.species = species;
 		this.npc = true;
-		exp = 55 * level;
+		exp = 75 * level;
 		drops = new Drop[10];
 		count = 0;
 		ranDir = new Random().nextInt(7);
@@ -47,15 +46,6 @@ public abstract class Enemy extends Creature{
 		lastTime = System.currentTimeMillis();
 	}
 	
-	/*
-	public void tick(){
-		
-	}
-	
-	public void render(Graphics g){
-		
-	}
-	*/
 	public void move(){
 		isMoving = false;
 		timer += System.currentTimeMillis() - lastTime;
@@ -65,37 +55,10 @@ public abstract class Enemy extends Creature{
 		int playerDist = (int)Math.sqrt((double)(Math.pow(x - handler.getPlayer().getX(), 2) + Math.pow(y - handler.getPlayer().getY(), 2)));
 		attackTimer += System.currentTimeMillis()-lastAttack;
 		lastAttack = System.currentTimeMillis();
-		if(playerDist > aggroDistance){
-			if(timer > 1200){
-				ranDir = new Random().nextInt(6);
-				timer = 0;
-				if(count <= 0){
-					count = 5;
-				}
-			}
-			if(timer > 400){
-				if(ranDir == 0){ // Up
-					velY = -speed;
-				}else if(ranDir == 1){// Down
-					velY = speed;
-				}else if(ranDir == 2){// Right
-					velX = speed;
-				}else if(ranDir == 3){ // Left
-					velX = -speed;
-				}
-				if(ranDir < 4){
-					animation = walking[direction];
-					animation.start();
-					count--;
-					isMoving = true;
-				}
-			}
-		}else if(playerDist <= aggroDistance){
+		if(playerDist <= aggroDistance || stats.getAggro()){
 			if(timer > 100){
 				int xMultiplier = 0;
 				int yMultiplier = 0;
-				//int xDist = (int)(handler.getPlayer().getX() - x);
-				//int yDist = (int)(handler.getPlayer().getY() - y);
 				if(handler.getPlayer().getX() > x && handler.getPlayer().getX() + handler.getPlayer().getBounds().x > x + bounds.x + bounds.width + 2){
 					direction = 2;
 					xMultiplier = 1;
@@ -130,32 +93,42 @@ public abstract class Enemy extends Creature{
 					attackTimer =0;
 				}
 			}
+		}else if(playerDist > aggroDistance){
+			if(timer > 1200){
+				ranDir = new Random().nextInt(6);
+				timer = 0;
+				if(count <= 0){
+					count = 5;
+				}
+			}
+			if(timer > 400){
+				if(ranDir == 0){ // Up
+					velY = -speed;
+				}else if(ranDir == 1){// Down
+					velY = speed;
+				}else if(ranDir == 2){// Right
+					velX = speed;
+				}else if(ranDir == 3){ // Left
+					velX = -speed;
+				}
+				if(ranDir < 4){
+					animation = walking[direction];
+					animation.start();
+					count--;
+					isMoving = true;
+				}
+			}
 		}
 		super.move();
 	}
 	
-	
-	public boolean attack(Attack attack){
-		if(attackBounds != null){
-			attackBounds.width = attack.getWidth();
-			attackBounds.height = attack.getHeight();
-			for(Entity e : handler.getWorld().getMap().getEntityManager().getEntities()){
-				if(e.getId() == ID.Player){
-					Player entity = (Player)e;
-					if(collisionAttack(entity)){
-						entity.getStats().damage(attack.getDamage() + (float)(attack.getDamage() * stats.getDmgMod()));
-						entity.setVelX(0);
-						entity.setVelY(0);
-						return true;
-					}
-				}
-			}
-		}
-		return false;
+	public EnemyType getEnemyType(){
+		return type;
 	}
 	
-	
-	
+	public EnemySpecies getSpecies(){
+		return species;
+	}
 	
 	public void droppedItems(){
 		for(int i = 0; i < drops.length; i++){
@@ -168,10 +141,24 @@ public abstract class Enemy extends Creature{
 		}
 	}
 	
+	public void setDefaultAttack(Attack attack){
+		defaultAttack = attack;
+	}
+	
 	public void gainExp(){
 		if(isDead){
 			handler.getPlayer().getStats().addExperience(exp);
 		}
 	}
 
+	@Override
+	public void unPause(){
+		//resets all Timers
+		lastAttack = System.currentTimeMillis();
+		lastTime = System.currentTimeMillis();
+	}
+	
+	public int getAggroDist(){
+		return aggroDistance;
+	}
 }

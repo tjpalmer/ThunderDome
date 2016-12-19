@@ -1,6 +1,7 @@
 package virassan.gfx.hud;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.util.Random;
 
@@ -41,7 +42,7 @@ public class BouncyText {
 	
 	
 	public void tick(){
-		if(lifeTime !=0){
+		if(lifeTime > 0){
 			lifeTime -= 0.01f;
 		}
 		if(lifeTime <= 0){
@@ -75,9 +76,14 @@ public class BouncyText {
 	
 	public void render(Graphics g){
 		if(live){
+			g.setFont(new Font(Font.SERIF, Font.PLAIN, 12));
 			g.setColor(color);
 			g.drawString(text, x - (int)handler.getGameCamera().getxOffset(), y - (int)handler.getGameCamera().getyOffset());
 		}
 	}
 
+	public boolean getLive(){
+		return live;
+	}
+	
 }

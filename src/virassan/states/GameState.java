@@ -3,7 +3,7 @@ package virassan.states;
 import java.awt.Color;
 import java.awt.Graphics;
 
-import virassan.entities.creatures.Player;
+import virassan.entities.creatures.player.Player;
 import virassan.gfx.hud.HUDManager;
 import virassan.main.Display;
 import virassan.main.Game;
@@ -21,7 +21,6 @@ public class GameState extends State{
 	private Game game;
 	private Handler handler;
 	public static World testWorld;
-	private Player player;
 	private HUDManager hud;
 	
 	public GameState(StateManager sm, Handler handler, Game game){
@@ -56,6 +55,18 @@ public class GameState extends State{
 		//handler.render(g);
 		
 		
+	}
+	
+	public Game getGame() {
+		return game;
+	}
+
+	public Handler getHandler() {
+		return handler;
+	}
+
+	public HUDManager getHud() {
+		return hud;
 	}
 
 	@Override

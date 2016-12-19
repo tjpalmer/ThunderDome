@@ -138,4 +138,10 @@ public class Statics extends StaticEntity{
 	public int getidNum(){
 		return idNum;
 	}
+
+	@Override
+	public void unPause() {
+		// TODO Auto-generated method stub
+		
+	}
 }

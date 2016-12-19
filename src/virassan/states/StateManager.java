@@ -25,7 +25,7 @@ public class StateManager {
 	
 	public void setState(State state){
 		states.push(state);
-		this.currentState = state;
+		currentState = state;
 	}
 	
 	public void init(){

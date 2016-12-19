@@ -2,7 +2,7 @@ package virassan.world;
 
 import java.awt.Graphics;
 
-import virassan.entities.creatures.Player;
+import virassan.entities.creatures.player.Player;
 import virassan.gfx.hud.HUDManager;
 import virassan.items.ItemManager;
 import virassan.main.Handler;
@@ -21,7 +21,6 @@ public class World {
 	private Handler handler;
 	private Player player;
 	private HUDManager hud;
-	private ItemManager itemManager;
 	private Map map;
 	
 
@@ -29,13 +28,19 @@ public class World {
 		this.handler = handler;
 		player = new Player(handler, 0, 0, ID.Player, 32, 32, "/textures/entities/blob_spritesheet_testing.png");
 		hud = new HUDManager(handler);
-		itemManager = new ItemManager(handler);
+	}
+	
+	public World(Handler handler, String mapFilepath){
+		this.handler = handler;
+		handler.setWorld(this);
+		player = new Player(handler, 0, 0, ID.Player, 32, 32, "/textures/entities/blob_spritesheet_testing.png");
+		setMap(mapFilepath);
+		hud = new HUDManager(handler);
 	}
 	
 	public void tick(){
 		map.tick();
 		hud.tick();
-		itemManager.tick();
 	}
 	
 	/**
@@ -57,7 +62,6 @@ public class World {
 
 		map.render(g);
 		hud.render(g);
-		itemManager.render(g);
 		
 	}
 	
@@ -71,7 +75,7 @@ public class World {
 	}
 
 	public ItemManager getItemManager(){
-		return itemManager;
+		return hud.getItemManager();
 	}
 	
 	public HUDManager getHUD(){

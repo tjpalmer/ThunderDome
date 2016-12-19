@@ -4,15 +4,21 @@ import java.awt.Graphics;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import virassan.entities.creatures.Player;
+
+import virassan.entities.creatures.enemies.Enemy;
+import virassan.entities.creatures.npcs.Merchant;
+import virassan.entities.creatures.player.Player;
+import virassan.input.LinkedQueue;
 import virassan.main.Display;
 import virassan.main.Handler;
+import virassan.quests.QuestTracker;
 
 public class EntityManager {
 
 	private Handler handler;
 	private Player player;
 	private ArrayList<Entity> entities;
+	private boolean isPaused;
 	
 	private Comparator<Entity> renderSorter = new Comparator<Entity>(){
 		@Override
@@ -27,13 +33,43 @@ public class EntityManager {
 	public EntityManager(Handler handler){
 		this.handler = handler;
 		entities = new ArrayList<Entity>();
+		isPaused = false;
 	}
 
 	public void tick(){
 		for(int i = 0; i < entities.size(); i++){
 			if(!entities.get(i).isDead()){
-				entities.get(i).tick();
+				if(!(entities.get(i) instanceof Player)){
+					if(!isPaused){
+						entities.get(i).tick();
+					}else{
+						if(entities.get(i) instanceof Merchant){
+							entities.get(i).tick();
+						}
+					}
+				}else{
+					entities.get(i).tick();
+				}
 			}else{
+				if(entities.get(i) instanceof Enemy){
+					if(handler.getPlayer().getKillList().containsKey(((Enemy)entities.get(i)).getEnemyType())){
+						if(handler.getPlayer().getKillList().get(((Enemy)entities.get(i)).getEnemyType()) != null){
+							handler.getPlayer().getKillList().replace(((Enemy)entities.get(i)).getEnemyType(), handler.getPlayer().getKillList().get(((Enemy)entities.get(i)).getEnemyType())+1);
+						}else{
+							handler.getPlayer().getKillList().replace(((Enemy)entities.get(i)).getEnemyType(), 1);
+						}
+					}else{
+						handler.getPlayer().getKillList().put(((Enemy)entities.get(i)).getEnemyType(), 1);
+					}
+					System.out.println(handler.getPlayer().getKillList());
+					for(QuestTracker quest : handler.getPlayer().getQuestLog().getActive()){
+						if(quest.getQuest().getHashMap().containsKey(((Enemy)entities.get(i)).getSpecies())){
+							quest.addEnemyCount(((Enemy)entities.get(i)).getSpecies());
+						}else if(quest.getQuest().getHashMap().containsKey(((Enemy)entities.get(i)).getEnemyType())){
+							quest.addEnemyCount(((Enemy)entities.get(i)).getEnemyType());
+						}
+					}
+				}
 				entities.remove(entities.get(i));
 				i--;
 			}
@@ -56,7 +92,6 @@ public class EntityManager {
 	public void addEntity(Entity e){
 		entities.add(e);
 	}
-	
 	
 	//Getters and Setters
 	
@@ -85,4 +120,18 @@ public class EntityManager {
 		this.entities = entities;
 	}
 	
+	public void setPaused(boolean b){
+		if(!b){
+			for(Entity i : entities){
+				i.unPause();
+			}
+		}
+		handler.getMouseInput().getLeftClicks().clear();
+		handler.getMouseInput().getRightClicks().clear();
+		isPaused = b;
+	}
+	
+	public boolean getPaused(){
+		return isPaused;
+	}
 }

@@ -14,7 +14,7 @@ public class Display {
 	private JFrame frame;
 	private Canvas canvas;
 	private String title;
-	public static final int WIDTH = 1080, HEIGHT = WIDTH / 14 * 8;
+	public static final int WIDTH = 1280, HEIGHT = WIDTH / 14 * 8;
 	
 	public Display(String title)
 	{

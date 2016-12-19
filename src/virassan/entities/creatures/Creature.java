@@ -1,9 +1,14 @@
 package virassan.entities.creatures;
 
 import java.awt.Rectangle;
+import java.util.Random;
 
 import virassan.entities.Entity;
 import virassan.entities.creatures.enemies.Enemy;
+import virassan.entities.creatures.npcs.NPC;
+import virassan.entities.creatures.utils.SkillTracker;
+import virassan.entities.creatures.utils.Stats;
+import virassan.gfx.hud.EventText;
 import virassan.main.Handler;
 import virassan.main.ID;
 import virassan.utils.Utils;
@@ -11,16 +16,14 @@ import virassan.world.maps.Tile;
 
 public abstract class Creature extends Entity{
 
-	
+	private Random gen = new Random();
 	public static final int DEFAULT_HEALTH = 10,
 							DEFAULT_MAXHEALTH = 10;
 	public static final float DEFAULT_SPEED = 4.0f;
 	public static final int DEFAULT_CREATURE_WIDTH = 32, 
 							DEFAULT_CREATURE_HEIGHT = 32;
 	
-	protected int maxHealth;
-	protected int health;
-	protected int level;
+	protected String name;
 	protected float speed;
 	protected boolean damaged;
 	protected Stats stats;
@@ -31,7 +34,6 @@ public abstract class Creature extends Entity{
 	protected int attackWidth, attackHeight;
 	protected String attackName;
 	protected Rectangle attackBounds;
-	
 	
 	//NPC Shit
 	protected boolean npc;
@@ -47,12 +49,13 @@ public abstract class Creature extends Entity{
 	 * @param width
 	 * @param height
 	 */
-	public Creature(Handler handler, float x, float y, int width, int height, int level, ID id) {
+	public Creature(Handler handler, String name, float x, float y, int width, int height, int level, ID id) {
 		super(handler, x, y, width, height, id);
+		this.name = name;
 		speed = DEFAULT_SPEED;
 		velX = 0;
 		velY = 0;
-		this.level = level;
+		stats =  new Stats(this, 100, 50, 50, level);
 		walkBounds = new Rectangle((int)x*5, (int)y*5, width*2, height*2);
 		attackBounds = new Rectangle();
 	}
@@ -184,24 +187,76 @@ public abstract class Creature extends Entity{
 		}
 	}
 	
+	public boolean restore(SkillTracker skill, Creature entity){
+		switch(skill.getSkillType().getEffectType()){
+		case "stam": entity.getStats().setStamina(Utils.clamp((float)(entity.getStats().getStamina() + skill.getSkillType().getEffectAmt()), 0F, entity.getStats().getMaxStam())); break;
+		case "health": entity.getStats().heal(skill.getSkillType().getEffectAmt()); break;
+		case "mana": entity.getStats().setMana(Utils.clamp((float)(entity.getStats().getMana() + skill.getSkillType().getEffectAmt()), 0F, entity.getStats().getMaxMana())); break;
+		}
+		switch(skill.getSkillCostType()){
+			case "stam": stats.setStamina(Utils.clamp((int)(stats.getStamina() - skill.getCost()), 0, stats.getMaxStam())); break;
+			case "mana": stats.setMana(Utils.clamp(stats.getMana() - skill.getCost(), 0, stats.getMaxMana())); break;
+			case "heal": stats.setHealth(Utils.clamp(stats.getHealth() - skill.getCost(), 0, stats.getMaxHealth())); break;
+		}
+		return true;
+	}
+	
+	public boolean attack(SkillTracker skill, Creature entity, String typeOfDamage){
+		// entity.getStats().damage((float)skill.getSkillType().getEffectAmt());
+		switch(typeOfDamage){
+		case "basic": entity.getStats().damage((float)skill.getSkillType().getEffectAmt() - (entity.getStats().getArmorRating() * entity.getStats().getArmorPer())); break;
+		case "special": break;
+		case "magic": break;
+		}
+		String skillCost = skill.getSkillCostType();
+		switch(skillCost){
+		case "stam": stats.setStamina(Utils.clamp((int)(stats.getStamina() - skill.getCost()), 0, stats.getMaxStam())); break;
+		case "mana": stats.setMana(Utils.clamp(stats.getMana() - skill.getCost(), 0, stats.getMaxMana())); break;
+		case "heal": stats.setHealth(Utils.clamp(stats.getHealth() - skill.getCost(), 0, stats.getMaxHealth())); break;
+		}
+		if(entity instanceof Enemy){
+			NPCDeath((Enemy)entity);
+		}
+		entity.getStats().setDamaged(true);
+		entity.getStats().setAggro(true);
+		return true;
+	}
 	
 	public boolean attack(Attack attack){
+		float crit = ((float)gen.nextInt(100))/ 100F;
 		if(attackBounds != null){
 			attackBounds.width = attack.getWidth();
 			attackBounds.height = attack.getHeight();
 			for(Entity e : handler.getWorld().getMap().getEntityManager().getEntities()){
-				if(e.equals(this)){
+				if(id == e.getId()){
 					continue;
-				} 
-				if(e.getId() == ID.Enemy){
-					Enemy entity = (Enemy)e;
-					if(collisionAttack(entity)){
-						System.out.println("You hit Something!");
-						entity.getStats().damage(attack.getDamage() + (float)(attack.getDamage() * stats.getDmgMod()));
-						NPCDeath(entity);
-						entity.setVelX(0);
-						entity.setVelY(0);
-						return true;
+				}
+				if(e instanceof Creature){
+					if(!(e instanceof NPC)){
+						Creature entity = (Creature)e;
+						if(collisionAttack(e)){
+							float temp = attack.getDamage() + (float)(attack.getDamage() * stats.getDmgMod());
+							float lvlDiff = entity.getStats().getArmorPer() * (stats.getLevel() - entity.stats.getLevel());
+							if(crit < stats.getCritChance()){
+								float critAmt = (temp * stats.getCritMult());
+								temp += critAmt;
+								if(entity instanceof Enemy){
+									stats.getEventList().add(new EventText(this, handler, "CRITICAL HIT", (int)x, (int)y));
+								}
+							}
+							temp += stats.getWeapDmg();
+							if(Math.abs(stats.getLevel() - entity.stats.getLevel()) >= 5){
+								entity.getStats().damage(temp - (entity.getStats().getArmorRating() * entity.getStats().getArmorPer()) + lvlDiff);
+							}else{
+								entity.getStats().damage(temp - (entity.getStats().getArmorRating() * entity.getStats().getArmorPer()));
+							}
+							if(entity instanceof Enemy){
+								NPCDeath((Enemy)entity);
+							}
+							entity.setVelX(0);
+							entity.setVelY(0);
+							return true;
+						}
 					}
 				}
 			}
@@ -229,6 +284,11 @@ public abstract class Creature extends Entity{
 		return false;
 	}
 	
+	public void skillAction(ID target, SkillTracker skill, Entity e){
+		if(e.getId() == target){
+			skill.action((Creature)e, this);
+		}
+	}
 	
 	private boolean collisionWithTile(int x, int y){
 		return handler.getWorld().getMap().getTile(x, y).isSolid();
@@ -239,8 +299,7 @@ public abstract class Creature extends Entity{
 	}
 	
 	public void NPCDeath(Enemy e){
-		if(e.health <=0){
-			System.out.println("DEAD!");
+		if(e.stats.getHealth() <=0){
 			e.isDead(true);
 			// TODO: move the below shit to the enemy class bro
 			e.droppedItems();
@@ -250,13 +309,12 @@ public abstract class Creature extends Entity{
 	
 	
 	//GETTERS AND SETTERS
-	
-	public int getHealth() {
-		return health;
+	public String getName(){
+		return name;
 	}
-
-	public void setHealth(int health) {
-		this.health = health;
+	
+	public void setName(String name){
+		this.name = name;
 	}
 
 	public float getVelX() {
@@ -283,14 +341,6 @@ public abstract class Creature extends Entity{
 		this.velY = velY;
 	}
 
-	public boolean isDamaged(){
-		return damaged;
-	}
-	
-	public void setDamaged(boolean damaged){
-		this.damaged = damaged;
-	}
-	
 	public boolean isNPC(){
 		return npc;
 	}
@@ -327,13 +377,4 @@ public abstract class Creature extends Entity{
 	public void setNPCTimer(Creature e){
 		e.resetTimer();
 	}
-	
-	public int getLevel() {
-		return level;
-	}
-
-	public void setLevel(int level) {
-		this.level = level;
-	}
-
 }

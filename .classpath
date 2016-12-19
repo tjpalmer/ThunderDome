@@ -3,5 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="lib" path="res"/>
+	<classpathentry kind="lib" path="C:/Users/Virassan/Documents/!ThunderDome/JSON Program/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Virassan/Downloads/jackson-core-2.8.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

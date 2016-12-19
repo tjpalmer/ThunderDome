@@ -20,9 +20,25 @@ public class Assets {
 	private BufferedImage front_1, front_Up, front_3, left_1, left_Up, left_3, right_1, right_Up, right_3, back_1, back_Up, back_3;
 	public static BufferedImage lava, water, idk, grass, flowers_1, flowers_2, stone_rock, animeDudeStanding, button_blue, button_green, button_pink, button_red;
 	
+	//menu GUI
+	public static BufferedImage menu, invCharMenu, questMenu, skillMenu, invItemInfo;
+	public static BufferedImage mainInv, activeTab, inactiveTab, invFood, invWeapons, invArmor, invJunk;
+	public static BufferedImage dialogBox, button_a, button_b;
+	public static BufferedImage scrollButtonUp, scrollButtonDown;
+	public static BufferedImage defaultHands, defaultFeet, defaultShoulders, defaultAcc1, defaultAcc2, defaultMain, defaultOff, defaultHead, defaultChest, defaultLegs;
+	public static BufferedImage invEmptySlot;
+	
+	// Skill Icons
+	public static BufferedImage skill_border, slash_icon, heal_icon, chop_icon, stab_icon;
+	
+	// Buff Icons
+	public static BufferedImage buff001, buff002;
 	
 	// Items
-	public static BufferedImage slime, apple, bandaid, toast;
+	public static BufferedImage slime, bandaid, tire, feather;
+	public static BufferedImage apple, toast, green_apple, cherry;
+	public static BufferedImage sword, broad_sword, dagger, staff, woodcutter_axe;
+	public static BufferedImage iron_cuirass, iron_helm, iron_boots, iron_gauntlet, iron_greaves;
 	
 	private BufferedImage[] walkingLeft, 
 			walkingRight, 
@@ -35,20 +51,62 @@ public class Assets {
 	 */
 	public static void init(){
 		SpriteSheet testing = new SpriteSheet(ImageLoader.loadImage("/textures/tiles/TextureSpriteSheet.png"));
+		// SpriteSheet tiles = new SpriteSheet(ImageLoader.loadImage("/textures/tiles/TileSpriteSheet.png"));
 		SpriteSheet animeDude = new SpriteSheet(ImageLoader.loadImage("/textures/entities/static/testing_anime_dude.png"));
-		SpriteSheet items = new SpriteSheet(ImageLoader.loadImage("/textures/items/TestingItemsSpriteSheet.png"));
+		SpriteSheet food = new SpriteSheet(ImageLoader.loadImage("/textures/items/food.png"));
+		SpriteSheet weapons = new SpriteSheet(ImageLoader.loadImage("/textures/items/weapons.png"));
+		SpriteSheet armor = new SpriteSheet(ImageLoader.loadImage("/textures/items/armor.png"));
+		SpriteSheet junk = new SpriteSheet(ImageLoader.loadImage("/textures/items/junk.png"));
+		SpriteSheet skills = new SpriteSheet(ImageLoader.loadImage("/textures/skills/skill01_sheet.png"));
 		button_blue = ImageLoader.loadImage("/textures/buttons/Button_blue.png");		
 		button_green = ImageLoader.loadImage("/textures/buttons/Button_green.png");
 		button_pink = ImageLoader.loadImage("/textures/buttons/Button_pink.png");
 		button_red = ImageLoader.loadImage("/textures/buttons/Button_red.png");
 		
+		// Inventory GUI tabs and text = 125wX50h, mainBG = 500wX350h
+		
+		// mainInv = ImageLoader.loadImage("/textures/gui/inventory/mainBackground.png");
+		mainInv = ImageLoader.loadImage("/textures/gui/inventory/Inventory.png");
+		invFood = ImageLoader.loadImage("/textures/gui/inventory/foodTab.png");
+		invWeapons = ImageLoader.loadImage("/textures/gui/inventory/weaponsTab.png");
+		invArmor = ImageLoader.loadImage("/textures/gui/inventory/armorTab.png");
+		invJunk = ImageLoader.loadImage("/textures/gui/inventory/junkTab.png");
+		inactiveTab = ImageLoader.loadImage("/textures/gui/inventory/activeTab.png");
+		activeTab = ImageLoader.loadImage("/textures/gui/inventory/inactiveTab.png");
+		
+		// Menu GUI
+		menu = ImageLoader.loadImage("/textures/gui/menus/menu.png");
+		invCharMenu = ImageLoader.loadImage("/textures/gui/menus/inventory - character.png");
+		questMenu = ImageLoader.loadImage("/textures/gui/menus/questlog.png");
+		skillMenu = ImageLoader.loadImage("/textures/gui/menus/skillbook.png");
+		invItemInfo = ImageLoader.loadImage("/textures/gui/menus/itemInfoBox.png");
+		//TODO : create scroll up and down buttons
+		scrollButtonUp = ImageLoader.loadImage("/textures/gui/menus/scrollButtonUp.png");
+		scrollButtonDown = ImageLoader.loadImage("/textures/gui/menus/scrollButtonDown.png");
+		
+		SpriteSheet defaultEquip = new SpriteSheet(ImageLoader.loadImage("/textures/gui/menus/defaultEquip.png"));
+		defaultHead = defaultEquip.sprite(0, 0, 64, 64);
+		defaultChest = defaultEquip.sprite(64, 0, 64, 64);
+		defaultLegs = defaultEquip.sprite(0, 64, 64, 64);
+		defaultFeet = defaultEquip.sprite(64, 64, 64, 64);
+		defaultShoulders = defaultEquip.sprite(0, 128, 64, 64);
+		defaultHands = defaultEquip.sprite(64, 128, 64, 64);
+		defaultAcc1 = defaultEquip.sprite(0, 192, 64, 64);
+		defaultAcc2 = defaultEquip.sprite(64, 192, 64, 64);
+		defaultMain = defaultEquip.sprite(0, 256, 64, 64);
+		defaultOff = defaultEquip.sprite(64, 256, 64, 64);
+		invEmptySlot = ImageLoader.loadImage("/textures/gui/menus/inv_empty_slot.png");
+		
+		dialogBox = ImageLoader.loadImage("/textures/gui/npc/npc_dialog_box.png");
+		button_a = ImageLoader.loadImage("/textures/gui/npc/dialog_button_a.png");
+		button_b = ImageLoader.loadImage("/textures/gui/npc/dialog_button_b.png");
 		
 		animeDudeStanding = animeDude.sprite(32, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
 		
 		//TODO: Load Assets from new texture SpriteSheet
 		//lava = testing.sprite(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-		grass = testing.sprite(0, 0, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
-		water = testing.sprite(Tile.TILE_WIDTH, 0, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
+		grass = testing.sprite(0, 0, Tile.TILE_WIDTH, Tile.TILE_WIDTH);
+		water = testing.sprite(Tile.TILE_WIDTH, 0, Tile.TILE_WIDTH, Tile.TILE_WIDTH);
 		
 		
 		flowers_1 = testing.sprite(Tile.TILE_WIDTH * 3, 0, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
@@ -60,10 +118,39 @@ public class Assets {
 		Statics.init();
 		
 		// ITEMS YO
-		apple = items.sprite(0, 0, ITEM_WIDTH, ITEM_HEIGHT);
-		slime = items.sprite(ITEM_WIDTH, 0, ITEM_WIDTH, ITEM_HEIGHT);
-		bandaid = items.sprite(ITEM_WIDTH * 2, 0, ITEM_WIDTH, ITEM_HEIGHT);
-		toast = items.sprite(ITEM_WIDTH * 3, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		apple = food.sprite(0, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		green_apple = food.sprite(ITEM_WIDTH, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		toast = food.sprite(ITEM_WIDTH * 2, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		cherry = food.sprite(ITEM_WIDTH * 3, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		// TODO: draw cherry
+		
+		slime = junk.sprite(0, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		bandaid = junk.sprite(ITEM_WIDTH, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		tire = junk.sprite(ITEM_WIDTH * 2, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		feather = junk.sprite(ITEM_WIDTH * 3, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		
+		sword = weapons.sprite(0, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		broad_sword = weapons.sprite(ITEM_WIDTH, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		dagger = weapons.sprite(ITEM_WIDTH * 2, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		staff = weapons.sprite(0, ITEM_WIDTH, ITEM_WIDTH, ITEM_HEIGHT);
+		woodcutter_axe = weapons.sprite(0, ITEM_WIDTH * 2, ITEM_WIDTH, ITEM_HEIGHT);
+		
+		// TODO: draw these armor items yo
+		iron_boots = armor.sprite(0, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		iron_cuirass = armor.sprite(ITEM_WIDTH, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		iron_gauntlet = armor.sprite(ITEM_WIDTH * 2, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		iron_greaves = armor.sprite(ITEM_WIDTH * 3, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		iron_helm = armor.sprite(ITEM_WIDTH * 4, 0, ITEM_WIDTH, ITEM_HEIGHT);
+		
+		// TODO: Skill Icons!
+		skill_border = ImageLoader.loadImage("/textures/skills/border.png");
+		slash_icon = skills.sprite(0, 0, 64, 64);
+		heal_icon = skills.sprite(64, 0, 64, 64);
+		chop_icon = skills.sprite(128, 0, 64, 64);
+		stab_icon = skills.sprite(192, 0, 64, 64);
+		
+		// TODO: Buff Icons
+		buff001 = ImageLoader.loadImage("/textures/buffs/buff001.png");
 	}
 	
 	/**
