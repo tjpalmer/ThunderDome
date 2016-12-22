@@ -85,6 +85,10 @@ public class ScrollPanel {
 		// System.out.println(height);
 	}
 	
+	/**
+	 * When one of the arrows is clicked, calls this method to move the points of each string
+	 * @param yAmt amount to be moved
+	 */
 	public void move(float yAmt){
 		//TODO: isn't moving quite right
 		if(shownBox.y + shownBox.height + yAmt < shownBox.y + shownBox.height && shownBox.y + shownBox.height + yAmt > completeBox.y){
@@ -134,6 +138,7 @@ public class ScrollPanel {
 		}
 	}
 	
+	// Not actually using this bit yet
 	public void renderBar(Graphics g){
 		//g.setColor(Handler.MANA_BLUE);
 		int scrollX = shownBox.x + shownBox.width - barWidth - 2;
@@ -150,9 +155,10 @@ public class ScrollPanel {
 		g.drawImage(Assets.scrollButtonDown, scrollX, buttonDown.y, null);
 	}
 	
+	// actually been checking the clicks elsewhere because of the way i have the click locations set up and how i access them (through polling a queue of the Points)
 	public void tick(MouseInput mouseInput){
 		//TODO make it do things when you click the buttons	
-		LinkedQueue clicks = mouseInput.getLeftClicks();
+		LinkedQueue clicks = mouseInput.getLeftClicks(); //This method returns a custom queue of recent left clicks
 
 	}
 
