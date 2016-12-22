@@ -35,6 +35,7 @@ public enum Skill{
 		this.cost = cost;
 		this.icon = icon;
 		this.range = range;
+		this.target = target;
 	}
 	
 	/**

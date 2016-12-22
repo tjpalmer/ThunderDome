@@ -21,13 +21,17 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import virassan.entities.creatures.enemies.EnemySpecies;
 import virassan.entities.creatures.enemies.EnemyType;
 import virassan.entities.creatures.player.Player;
+import virassan.entities.creatures.utils.Buff;
 import virassan.entities.creatures.utils.BuffTracker;
+import virassan.entities.creatures.utils.Skill;
 import virassan.entities.creatures.utils.SkillTracker;
 import virassan.items.Equip;
 import virassan.items.Item;
 import virassan.main.Handler;
+import virassan.quests.Quest;
 import virassan.quests.QuestTracker;
 
 /**
@@ -226,9 +230,8 @@ public class Utils {
 		return map;
 	}
 	
-	public static Map toMap(Equip equip, Item item){
-		HashMap<String, Object> map = new HashMap<>();
-		map.put("slot", equip.name());
+	public static Map toMap(Item item){
+		HashMap<String, String> map = new HashMap<>();
 		if(item != null){
 			map.put("item", item.name());
 		}else{
@@ -265,61 +268,82 @@ public class Utils {
 		obj.put("yOffset", new Integer((int)handler.getGameCamera().getyOffset()));
 		obj.put("map_name", handler.getMap().getMapName());
 		obj.put("map", handler.getMap().getFilepath());
+		JSONArray stuff = new JSONArray();
 		
+		// EQUIP
+		JSONObject equips = new JSONObject();
 		JSONArray equip = new JSONArray();
 		for(Equip slot : player.getStats().getEquip().keySet()){
-			equip.add(toMap(slot, player.getStats().getEquip().get(slot)));
+			equip.add(toMap(player.getStats().getEquip().get(slot)));
 		}
-		obj.put("equip", equip);
+		equips.put("equip", equip);
+		stuff.add(equips);
+		
+		// INVENTORY
+		JSONObject inv = new JSONObject();
 		JSONArray inventory = new JSONArray();
 		for(Item item : player.getInventory().getItemMap().keySet()){
 			inventory.add(toMap(item, player.getInventory().getItemMap().get(item)));
 		}
-		obj.put("inventory", inventory);
+		inv.put("inventory", inventory);
+		stuff.add(inv);
+		
+		// SKILL BAR
+		JSONObject skillbar = new JSONObject();
 		JSONArray skillBar = new JSONArray();
 		for(int i = 0; i < player.getSkillBar().length; i++){
 			skillBar.add(toMap(player.getSkillBar()[i], i));
 		}
-		obj.put("skillbar", skillBar);
+		skillbar.put("skillbar", skillBar);
+		stuff.add(skillbar);
+		
+		// ACTIVE QUESTS
+		JSONObject aQuests = new JSONObject();
 		JSONArray activeQuests = new JSONArray();
 		for(QuestTracker quest : player.getQuestLog().getActive()){
 			activeQuests.add(toMap(quest));
+			JSONObject reqObj = new JSONObject();
 			JSONArray reqs = new JSONArray();
 			for(Object req : quest.getQuest().getHashMap().keySet()){
 				reqs.add(toMap(quest.getCurAmt(req), req));
 			}
-			activeQuests.add(reqs);
+			reqObj.put("reqs", reqs);
+			activeQuests.add(reqObj);
 		}
-		obj.put("active_quests", activeQuests);
+		aQuests.put("active_quests", activeQuests);
+		stuff.add(aQuests);
+		
+		// COMPLETED QUESTS
+		JSONObject cQuests = new JSONObject();
 		JSONArray completedQuests = new JSONArray();
 		for(QuestTracker quest : player.getQuestLog().getComplete()){
 			completedQuests.add(toMap(quest));
 		}
-		obj.put("completed_quests", completedQuests);
+		cQuests.put("completed_quests", completedQuests);
+		stuff.add(cQuests);
+		
+		// BUFFS
+		JSONObject bList = new JSONObject();
 		JSONArray buffs = new JSONArray();
 		for(BuffTracker buff : player.getStats().getBuffs()){
 			if(buff.getBuff() != null){
 				buffs.add(toMap(buff));
 			}
 		}
-		obj.put("player_buffs", buffs);
+		bList.put("buffs", buffs);
+		stuff.add(bList);
+		
+		// SKILL LIST
+		JSONObject sList = new JSONObject();
 		JSONArray skills = new JSONArray();
 		for(SkillTracker skill : player.getSkills()){
 			skills.add(toMap(skill));
 		}
-		obj.put("player_skills", skills);
-		
+		sList.put("skills", skills);
+		stuff.add(sList);
+		obj.put("arrays", stuff);
 		//TODO: add itemmanager items array, player kill list
-		
-		
-		/*
-		JSONArray list = new JSONArray();
-		list.add("Greetings traveler!");
-		list.add("Welcome to our kingdom!");
-		list.add("Good day, wanderer!");
-		obj.put("greetings", list);
-		*/
-
+	
 		try {
 			FileWriter file = new FileWriter("c:\\Users\\Virassan\\Documents\\!ThunderDome\\ThunderDome\\ThunderDome\\res\\saves\\testsave.json");
 			file.write(obj.toJSONString());
@@ -340,13 +364,14 @@ public class Utils {
 		JSONObject jsonObject;
 		long playerLevel = 0, playerExp = 0, charisma = 0, resilience = 0, strength = 0, intelligence = 0, dexterity = 0, xOffset = 0, yOffset = 0;
 		String map = null, mapName = null, playerName = null;
-		SkillTracker[] skillBar = new SkillTracker[5];
-		HashMap<String, Integer> inventory = new HashMap<>();
-		HashMap<String, String> equip = new HashMap<>();
-		//TODO: add activequests, completedquests, buffs, skills
-		//JSONParser parser = new JSONParser();
+		String[] skillBar = new String[5];
+		HashMap<String, Long> inventory = new HashMap<>();
+		ArrayList<String> equip = new ArrayList<>();
+		HashMap<String, Long> buffs = new HashMap<>();
+		HashMap<String, HashMap<String, Long>> activeQuests = new HashMap<>();
+		ArrayList<String> completedQuests = new ArrayList<>();
+		ArrayList<String> skills = new ArrayList<>();
 		try{
-			//jsonObject = (JSONObject)parser.parse(new FileReader(filepath));
 			jsonObject = (JSONObject)JSONValue.parse(new FileReader(filepath));
 			playerName = (String)jsonObject.get("player_name");
 			playerLevel = (Long)jsonObject.get("player_level");
@@ -360,92 +385,89 @@ public class Utils {
 			yOffset = (Long)jsonObject.get("yOffset");
 			map = (String)jsonObject.get("map");
 			mapName = (String)jsonObject.get("map_name");
-			System.out.println(playerName + ", " + playerLevel + ", " + intelligence + ", " + mapName + ", " + playerExp);
-			//TODO: read the arrays of arrays!
-			JSONArray skillList = (JSONArray)jsonObject.get("player_skills");
-			JSONArray inv = (JSONArray)jsonObject.get("inventory");
-			JSONArray skillbar = (JSONArray)jsonObject.get("skillbar");
-			JSONArray eq = (JSONArray)jsonObject.get("equip");
-			JSONArray aq = (JSONArray)jsonObject.get("active_quests");
-			//TODO: buffs, then completed quests
-			
-			
-			
-			
-			// SKILL LIST
-			for(Object o : skillList){
-				JSONObject object = (JSONObject)o;
-				String skill = (String)object.get("skill");
-				System.out.println("Skill: " + skill);
-			}
-			
-			// INVENTORY
-			for(Object o : inv){
-				JSONObject array = (JSONObject)o;
-				String item = (String)array.get("item");
-				Long stack = (Long)array.get("stack");
-				System.out.println(item + ": " + stack);
-			}
-			
-			// SKILLBAR
-			for(Object o : skillbar){
-				JSONObject array = (JSONObject)o;
-				String test = (String)array.get("skill");
-				System.out.println(test);
-				Long test2 = (Long)array.get("index");
-				System.out.println(test2);
-			}
-		
-			// EQUIP
-			for(Object o : eq){
-				JSONObject array = (JSONObject)o;
-				String item = (String)array.get("item");
-				String slot = (String)array.get("slot"); //TODO: change "equip" to "slot"
-				System.out.println(slot + ": " + item);
-			}
-			
-			
-			//TODO: BUFFS
-			/*
-			JSONArray playerBuffs = (JSONArray)jsonObject.get("player_buffs");
-			Iterator<Object> buffIt = playerBuffs.iterator();
-			while(buffIt.hasNext()){
-				JSONObject array = (JSONObject)buffIt.next();
-				String buff = (String)array.get("buff");
-				Long buffTimer = (Long)array.get("buff_time");
-				System.out.println(buff + ": " + buffTimer);
-			}*/
-			
-			//TODO: COMPLETED QUESTS
-			
-			// ACTIVE QUESTS
-			
-			Iterator<Object> aqIterator = aq.iterator();
-			while(aqIterator.hasNext()){
-				/*
-				JSONArray reqs = (JSONArray)aqIterator.next();
-				Iterator<Object> reqIterator = reqs.iterator();
-				while(reqIterator.hasNext()){
-					JSONObject reqObj = (JSONObject)reqIterator.next();
-					String req = (String)reqObj.get("req");
-					Long amount = (Long)reqObj.get("amt");
-					System.out.println(req + ": " + amount);
+			JSONArray arrays = (JSONArray)jsonObject.get("arrays");
+			for(int i = 0; i < arrays.size(); i++){
+				switch(i){
+				case 0: 
+					JSONObject eqObj = (JSONObject)arrays.get(i);
+					JSONArray eqArray = (JSONArray)eqObj.get("equip");
+					for(Object o : eqArray){
+						JSONObject obj = (JSONObject)o;
+						String item = (String)obj.get("item");
+						equip.add(item);
+					}
+					break;
+				case 1:
+					JSONObject invObj = (JSONObject)arrays.get(i);
+					JSONArray invArray = (JSONArray)invObj.get("inventory");
+					for(Object o : invArray){
+						JSONObject obj = (JSONObject)o;
+						String item = (String)obj.get("item");
+						Long stack = (Long)obj.get("stack");
+						inventory.put(item, stack);
+					}
+					break;
+				case 2:
+					JSONObject skillbarObj = (JSONObject)arrays.get(i);
+					JSONArray skillbarArray = (JSONArray)skillbarObj.get("skillbar");
+					for(Object o : skillbarArray){
+						JSONObject obj = (JSONObject)o;
+						String skill = (String)obj.get("skill");
+						Long index = (Long)obj.get("index");
+						skillBar[index.intValue()] = skill;
+					}
+					break;
+				case 3:
+					HashMap<String, Long> reqs = new HashMap<>();
+					JSONObject activeObj = (JSONObject)arrays.get(i);
+					JSONArray activeArray = (JSONArray)activeObj.get("active_quests");
+					String prev = "";
+					for(Object o : activeArray){
+						if(((JSONObject)o).get("quest") != null){
+							String quest = (String)((JSONObject)o).get("quest");
+							prev = quest;
+						}else if(((JSONObject)o).get("reqs") != null){
+							JSONArray reqArray = (JSONArray)((JSONObject)o).get("reqs");
+							for(Object array : reqArray){
+								JSONObject arrayObj = (JSONObject)array;
+								String req = (String)arrayObj.get("req");
+								Long amount = (Long)arrayObj.get("amt");
+								reqs.put(req, amount);
+							}
+							activeQuests.put(prev, reqs);
+						}
+					}
+					break;
+				case 4:
+					JSONObject completeObj = (JSONObject)arrays.get(i);
+					JSONArray completeArray = (JSONArray)completeObj.get("completed_quests");
+					for(Object o : completeArray){
+						JSONObject obj = (JSONObject)o;
+						String quest = (String)obj.get("quest");
+						completedQuests.add(quest);
+					}
+					break;
+				case 5:
+					JSONObject buffObj = (JSONObject)arrays.get(i);
+					JSONArray buffArray = (JSONArray)buffObj.get("buffs");
+					for(Object o : buffArray){
+						JSONObject obj = (JSONObject)o;
+						String buff = (String)obj.get("buff");
+						Long buffTime = (Long)obj.get("buff_time");
+						buffs.put(buff, buffTime);
+					}
+					break;
+				case 6:
+					JSONObject skillObj = (JSONObject)arrays.get(i);
+					JSONArray skillArray = (JSONArray)skillObj.get("skills");
+					for(Object o : skillArray){
+						JSONObject obj = (JSONObject)o;
+						String skill = (String)obj.get("skill");
+						skills.add(skill);
+					}
+					break;
 				}
-				*/
 			}
-			
-			/*
-			JSONArray msg = (JSONArray) jsonObject.get("greetings");
-			Iterator<String> iterator = msg.iterator();
-			while (iterator.hasNext()) {
-				System.out.println(iterator.next());
-			}
-			 */
-			
-			
-		}catch (FileNotFoundException e){
-			e.printStackTrace();
-			System.out.println(filepath);
 		}catch (IOException e){
 			e.printStackTrace();
 			System.out.println(filepath);
@@ -464,7 +486,7 @@ public class Utils {
 		if(playerLevel == 0){
 			handler.getPlayer().getStats().setLevel(1);
 		}else{
-			for(int i = 0; i < (int)playerLevel; i++){
+			for(int i = 1; i < (int)playerLevel; i++){
 				handler.getPlayer().getStats().levelUp();
 			}
 		}
@@ -492,6 +514,58 @@ public class Utils {
 		}else{
 			handler.getPlayer().getTraits().levelInt((int)intelligence);
 		}
+		for(String str : skills){
+			handler.getPlayer().addSkill(new SkillTracker(handler.getPlayer(), Skill.valueOf(str), handler.getPlayer().getAnimation()));
+		}
+		for(int i = 0; i < skillBar.length; i++){
+			if(!skillBar[i].equals("")){
+				for(SkillTracker skill : handler.getPlayer().getSkills()){
+					if(skill.getSkillType() == Skill.valueOf(skillBar[i])){
+						handler.getPlayer().setSkillBar(skill, i);
+					}
+				}
+			}
+		}
+		for(String str : completedQuests){
+			handler.getPlayer().getQuestLog().addComplete(new QuestTracker(Quest.valueOf(str)));
+		}
+		for(String str : buffs.keySet()){
+			handler.getPlayer().getStats().addBuff(new BuffTracker(handler.getPlayer(), Buff.valueOf(str)));
+		}
+		for(String str : inventory.keySet()){
+			handler.getPlayer().getInventory().addItems(Item.valueOf(str), inventory.get(str).intValue());
+		}
+		for(String str : equip){
+			if(!str.equals("")){
+				handler.getPlayer().getStats().equip(Item.valueOf(str));
+			}
+		}
+		for(String str : activeQuests.keySet()){
+			QuestTracker quest = new QuestTracker(Quest.valueOf(str));
+			for(String r : activeQuests.get(str).keySet()){
+				Object test;
+				try{
+					test = EnemyType.valueOf(r);
+				}catch(IllegalArgumentException e){
+					try{
+						test = EnemySpecies.valueOf(r);
+					}catch(IllegalArgumentException a){
+						try{
+							test = Item.valueOf(r);
+						}catch(IllegalArgumentException k){
+							System.out.println("Cannot Find ENUM");
+							test = null;
+							k.printStackTrace();
+						}
+					}
+				}
+				if(test != null){
+					quest.setReqAmt(test, activeQuests.get(str).get(r).intValue());
+				}
+			}
+		}
+		
+		
 	}
 	
 	/**

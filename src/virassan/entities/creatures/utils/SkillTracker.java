@@ -19,14 +19,9 @@ public class SkillTracker {
 	int x, y, skillCount;
 	private long skillTimer, skillLast;
 	
-	
-	public SkillTracker() {
-		// TODO Auto-generated constructor stub
-	}
-
-	public SkillTracker(Creature entity, ID target, Skill skill, Animation anime){
+	public SkillTracker(Creature entity, Skill skill, Animation anime){
 		this.entity = entity;
-		this.target = target;
+		this.target = skill.getTarget();
 		skillType = skill;
 		skillAnimation = anime;
 		if(skill.getType().equals("buff")){

@@ -173,6 +173,17 @@ public class QuestTracker {
 		return -1;
 	}
 	
+	public void setReqAmt(Object req, int amount){
+		if(reqs.containsKey(req)){
+			reqs.replace(req, amount);
+			if(req instanceof EnemyType){
+				enemyCount.put((EnemyType)req, amount);
+			}else if(req instanceof EnemySpecies){
+				speciesCount.put((EnemySpecies)req, amount);
+			}
+		}
+	}
+	
 	public String toString(){
 		return quest.toString();
 	}

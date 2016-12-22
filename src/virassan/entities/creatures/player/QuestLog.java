@@ -52,6 +52,10 @@ public class QuestLog {
 		return completedQuests;
 	}
 	
+	public void addComplete(QuestTracker quest){
+		completedQuests.add(quest);
+	}
+	
 	public ArrayList<QuestTracker> getActive(){
 		return activeQuests;
 	}

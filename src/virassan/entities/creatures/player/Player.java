@@ -111,15 +111,16 @@ public class Player extends Creature{
 		//Skills
 		skillBar = new SkillTracker[5];
 		skillList = new ArrayList<SkillTracker>();
-		skillList.add(new SkillTracker(this, ID.Enemy, Skill.STAB, animation));
-		skillList.add(new SkillTracker(this, ID.Enemy, Skill.SLASH, animation));
-		skillList.add(new SkillTracker(this, ID.Player, Skill.HEAL_1, animation));
-		skillList.add(new SkillTracker(this, ID.Enemy, Skill.CHOP, animation));
+		/*
+		skillList.add(new SkillTracker(this, Skill.STAB, animation));
+		skillList.add(new SkillTracker(this, Skill.SLASH, animation));
+		skillList.add(new SkillTracker(this, Skill.HEAL_1, animation));
+		skillList.add(new SkillTracker(this, Skill.CHOP, animation));
 		for(int i = 0; i < skillBar.length; i++){
 			if(i < skillList.size()){
 				skillBar[i] = skillList.get(i);
 			}
-		}
+		}*/
 		skillActive = false;
 	}
 
@@ -357,8 +358,20 @@ public class Player extends Creature{
 		return gold;
 	}
 	
+	public Animation getAnimation(){
+		return animation;
+	}
+	
 	public void addGold(float amt){
 		gold = Utils.clamp(gold + amt, 0F, 999999999F);
+	}
+	
+	public void addSkill(SkillTracker skill){
+		skillList.add(skill);
+	}
+	
+	public void setSkillBar(SkillTracker skill, int index){
+		skillBar[index] = skill;
 	}
 	
 	public ArrayList<SkillTracker> getSkills(){
