@@ -95,8 +95,10 @@ public class Inventory{
 	 * Adds an Item to the Inventory and Updates its stack count
 	 * @param item the Item to be added
 	 */
-	public void addItems(Item item){
-		player.getHandler().getItemManager().addItem(item.getImage());
+	public void addItems(Item item, boolean show){
+		if(show){
+			player.getHandler().getItemManager().addItem(item.getImage());
+		}
 		boolean isFound = false;
 		if(counts.containsKey(item)){
 			counts.replace(item, counts.get(item)+1);
@@ -139,9 +141,9 @@ public class Inventory{
 		}
 	}
 	
-	public void addItems(Item item, int amount){
+	public void addItems(Item item, int amount, boolean show){
 		for(int i = 0; i < amount; i++){
-			addItems(item);
+			addItems(item, show);
 		}
 	}
 	

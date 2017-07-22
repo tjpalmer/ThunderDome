@@ -32,7 +32,6 @@ public class ItemPickUp {
 	
 	public void render(Graphics g){
 		if(live){
-			//TODO is this gonna work?
 			g.drawImage(image, (int)x, (int)y, null);
 		}
 	}

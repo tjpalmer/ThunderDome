@@ -3,6 +3,7 @@ package virassan.entities;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
+import virassan.entities.creatures.player.Player;
 import virassan.main.Handler;
 import virassan.main.ID;
 
@@ -58,7 +59,7 @@ public abstract class Entity {
 	 * @return true is collision, false if not
 	 */
 	public boolean checkEntityCollisions(float xOffset, float yOffset){
-		for(Entity e : handler.getWorld().getMap().getEntityManager().getEntities()){
+		for(Entity e : Handler.WORLD.getMap().getEntityManager().getEntities()){
 			if(e.equals(this)){
 				continue;
 			}
@@ -119,6 +120,7 @@ public abstract class Entity {
 	 */
 	public void setX(float x) {
 		this.x = x;
+		//System.out.println("Entity x: " + x);
 	}
 
 	/**
@@ -127,6 +129,7 @@ public abstract class Entity {
 	 */
 	public void setY(float y) {
 		this.y = y;
+		//System.out.println("Entity y: " + y);
 	}
 	
 	/**

@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 
-import virassan.entities.Entity;
 import virassan.main.Handler;
 import virassan.utils.Utils;
 

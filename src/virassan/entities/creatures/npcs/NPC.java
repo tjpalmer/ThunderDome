@@ -55,6 +55,7 @@ public class NPC extends Creature{
 	public void setDialog(QuestTracker target){
 		if(target == null){
 			setDialog();
+			System.out.println("QuestTracker for this quest is null.");
 		}else{
 			if(!target.isComplete()){
 				System.out.println("in active");

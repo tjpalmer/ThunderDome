@@ -1,0 +1,99 @@
+{
+	"name":"Hajime Village",
+	"width":30,
+	"height":30,
+	"spawn_x":600,
+	"spawn_y":260,
+	"npc_json":"res/worlds/maps/entities/npcs/hajime_village.json",
+	"base_tile":0,
+	"arrays":[
+		{"warp_portal":[
+				{"x":0,
+				"y":192,
+				"map_json":"res/worlds/maps/hajime_village.json",
+				"spawn_x":1790,
+				"spawn_y":192},
+				{"x":1856,
+				"y":192,
+				"map_json":"res/worlds/maps/hajime_village.json",
+				"spawn_x":100,
+				"spawn_y":192}
+		]},
+		{"statics":[
+			{"type":"tile",
+			"IDnum":1,
+			"cords":[
+				{"x":0, "y":0},
+				{"x":1, "y":1},
+				{"x":1, "y":0},
+				{"x":2, "y":0},
+				{"x":3, "y":0},
+				{"x":4, "y":0},
+				{"x":5, "y":0},
+				{"x":6, "y":0},
+				{"x":7, "y":0},
+				{"x":8, "y":0},
+				{"x":9, "y":0},
+				{"x":10, "y":0},
+				{"x":11, "y":0},
+				{"x":12, "y":0},
+				{"x":13, "y":0},
+				{"x":14, "y":0},
+				{"x":14, "y":1},
+				{"x":14, "y":2},
+				{"x":14, "y":3},
+				{"x":15, "y":4}]
+			},
+			{"type":"static",
+			"spritesheet":"/textures/tiles/TextureSpriteSheet.png",
+			"width":32,
+			"height":32,
+			"x":64,
+			"y":0,
+			"cords":[
+				{"x":20, "y":1},
+				{"x":3, "y":10}]
+			}
+		]},
+		{"monsters":[
+			{"name":"Slime", 
+			"width":32,
+			"height":32,
+			"enemy_type":"SOLDIER", 
+			"enemy_species":"SLIME", 
+			"level":2,
+			"min":5,
+			"max":10,
+			"drops":[
+				{"item": "APPLE", "rate":98},
+				{"item":"SLIME", "rate":77},
+				{"item":"TOAST", "rate":55},
+				{"item":"DAGGER", "rate":41},
+				{"item":"SWORD", "rate":11}],
+			"attack":[],
+			"region":[
+				{"x":704, "y":128, "width":1400, "height":948}]
+			},
+			{"name": "Slime Boss", 
+			"width":32,
+			"height":32,
+			"enemy_type":"BOSS", 
+			"enemy_species":"SLIME", 
+			"level":10,
+			"min":1,
+			"max":1,
+			"drops":[
+				{"item":"CHERRY", "rate":85},
+				{"item":"BANDAID", "rate":43},
+				{"item": "WOODCUTTER_AXE", "rate":30},
+				{"item":"TIRE", "rate":15},
+				{"item":"IRON_BOOTS", "rate":7},
+				{"item":"IRON_HELM", "rate":3}],
+			"attack":[
+				{"speed": 1000, "dmg_mod":5, "width":20, "name": "Default"}],
+			"region":[
+				{"x":448, "y":375, "width":400, "height":400}]
+			}
+		]}
+	]
+}

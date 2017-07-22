@@ -4,9 +4,9 @@ import java.awt.Rectangle;
 
 public enum EnemyType {
 
-	SOLDIER(3, 0.75f, "Soldier", 32, 32, "/textures/entities/blob_spritesheet_testing.png"),
-	CAPTAIN(5, 0.10f, "Captain", 32, 32, "/textures/entities/captain_blob.png"),
-	BOSS(20, 0.045f, "Boss", 32, 32, "/textures/entities/boss_blob.png");
+	SOLDIER(3, 0.75f, "Soldier", 32, 32, "_green.png"),
+	CAPTAIN(5, 0.10f, "Captain", 32, 32, "_blue.png"),
+	BOSS(20, 0.045f, "Boss", 32, 32, "_pink.png");
 	
 	private String name;
 	private int spawnSpacing;

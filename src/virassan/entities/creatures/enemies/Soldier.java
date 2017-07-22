@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Random;
 
 import virassan.entities.creatures.Attack;
@@ -18,7 +19,7 @@ public class Soldier extends Enemy{
 	private BufferedImage sprite;
 	private float spawnX, spawnY;
 	
-	public Soldier(Handler handler, String name, float x, float y, ID id, EnemyType type, EnemySpecies species, int level, Drop[] drops) {
+	public Soldier(Handler handler, String name, float x, float y, int height, int width, ID id, EnemyType type, EnemySpecies species, int level) {
 		super(handler, name, x, y, level, id, type, species);
 		aggroDistance = (int)(Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2))) * 3;
 		stats.setEntity(this);
@@ -32,18 +33,18 @@ public class Soldier extends Enemy{
 		
 		direction = new Random().nextInt(4);
 		walking = new Animation[5];
-		this.drops = drops;
 		this.spawnX = x;
 		this.spawnY = y;		
 		
 		//Collision Bounds
 		bounds.x = 2;
-		bounds.y = 20;
-		bounds.width = 20;
-		bounds.height = 15;
+		bounds.y = (height/2) + 10;
+		bounds.width = width - 15;
+		bounds.height = (height/2) - 10;
 		
 		//Animation Shit
-		Assets entitySprites = new Assets(type.getFilepath());
+		String filepath = species.getFilePath() + type.getFilepath();
+		Assets entitySprites = new Assets(filepath, height, width);
 		sprite = entitySprites.getFront_1();
 		
 		//Animation Shtuff
@@ -65,7 +66,25 @@ public class Soldier extends Enemy{
 		walkBounds.width =  type.getWidth()*20;
 		walkBounds.height = type.getHeight()*20;
 	}
+	
+	public Soldier(Handler handler, String name, float x, float y, int height, int width, ID id, EnemyType type, EnemySpecies species, int level, Drop[] drops){
+		this(handler, name, x, y, height, width, id, type, species, level);
+		this.drops = drops;
+	}
+	
+	public Soldier(Handler handler, String name, float x, float y, ID id, EnemyType type, EnemySpecies species, int level, Drop[] drops) {
+		this(handler, name, x, y, 32, 32, id, type, species, level, drops);
+	}
 
+	public Soldier(Handler handler, String name, float x, float y, int height, int width, ID id, EnemyType type, EnemySpecies species, int level, ArrayList<Drop> drops){
+		this(handler, name, x, y, height, width, id, type, species, level);
+		this.drops =  new Drop[drops.size()];
+		for(int i = 0; i < drops.size(); i++){
+			this.drops[i] = drops.get(i);
+		}
+		
+	}
+	
 	@Override
 	public void tick() {
 		move();

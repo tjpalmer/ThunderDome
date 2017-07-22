@@ -1,0 +1,10 @@
+{
+	"statics":
+	[
+		{"SMALL_ROCK":
+		[
+			{"asset": "stone_rock", "solid":false, "height":32, "width":32}
+		]
+		}
+	]
+}

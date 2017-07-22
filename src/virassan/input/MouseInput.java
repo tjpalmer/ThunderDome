@@ -60,13 +60,11 @@ public class MouseInput implements MouseListener, MouseMotionListener{
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -79,7 +77,6 @@ public class MouseInput implements MouseListener, MouseMotionListener{
 				if(doubleTimer < 300 && distance < 10){
 					doubleClick = true;
 					doubleClicks.clear();
-					//System.out.println("Double click");
 				}else{
 					doubleClick = false;
 					doubleClicks.clear();
@@ -91,15 +88,12 @@ public class MouseInput implements MouseListener, MouseMotionListener{
 			if(draggedPos == null){
 				endDrag = null;
 				startDrag = e.getPoint();
-				System.out.println("Start: " + startDrag.x + ", " + startDrag.y);
 			}
 			leftClicks.add(new Node(e.getPoint()));
-			//System.out.println("Left Click");
 			doubleTimer = 0;
 		}else if(e.getButton() == MouseEvent.BUTTON3){ //right button
 			rightPressed = true;
 			rightClicks.add(new Node(e.getPoint()));
-			//System.out.println("Right Click");
 		}
 	}
 
@@ -107,9 +101,8 @@ public class MouseInput implements MouseListener, MouseMotionListener{
 	public void mouseReleased(MouseEvent e) {
 		if(e.getButton() == MouseEvent.BUTTON1){ //left button
 			leftPressed = false;
-			if(draggedPos != null){
+			if(startDrag != e.getPoint()){
 				endDrag = e.getPoint();
-				System.out.println("End: " + endDrag.x + ", " + endDrag.y);
 				draggedPos = null;
 			}
 		}else if(e.getButton() == MouseEvent.BUTTON3){ //right button

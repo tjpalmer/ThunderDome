@@ -9,7 +9,6 @@ import java.awt.event.KeyListener;
  *
  */
 public class KeyInput implements KeyListener{
-	
 	private String text;
 	private boolean isTyping;
 	
@@ -93,7 +92,6 @@ public class KeyInput implements KeyListener{
 
 	@Override
 	public void keyTyped(KeyEvent e) {
-		// TODO Auto-generated method stub
 		if(isTyping){
 			char keyCharacter = e.getKeyChar();
 			text += keyCharacter;
@@ -117,7 +115,6 @@ public class KeyInput implements KeyListener{
 	public String getTyped(){
 		return text;
 	}
-	
 	
 	public void isTyping(boolean b){
 		isTyping = b;

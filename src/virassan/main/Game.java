@@ -8,8 +8,6 @@ import virassan.gfx.Assets;
 import virassan.gfx.GameCamera;
 import virassan.input.KeyInput;
 import virassan.input.MouseInput;
-import virassan.states.State;
-import virassan.states.StateManager;
 import virassan.world.World;
 
 /**
@@ -29,16 +27,8 @@ public class Game implements Runnable{
 	private BufferStrategy bs;
 	private Graphics g;
 	
-	
 	public static Handler handler;
-	
-	//States
-	public StateManager stateManager;
-	public State gameState; //set for public for testing
-	public State mainMenuState; //set for public for testing
-	
-	
-	private World testWorld;
+	private World world;
 	
 	//Input
 	private KeyInput keyManager;
@@ -74,13 +64,7 @@ public class Game implements Runnable{
 		handler = new Handler(this);
 		Assets.init();
 		gameCamera = new GameCamera(handler, 0,0);
-		//stateManager = new StateManager(handler, this);
-		//stateManager.init();
-		testWorld = (new World(handler, "res/worlds/maps/world3.txt"));
-		/*
-		handler.setWorld(testWorld);
-		handler.getWorld().setMap("res/worlds/maps/world2.txt");
-		*/
+		world = new World(handler);
 	}
 	
 	/**
@@ -89,10 +73,6 @@ public class Game implements Runnable{
 	public void tick(){
 		keyManager.tick();
 		mouseManager.tick();
-		/*
-		if(stateManager != null){
-			stateManager.tick();
-		}*/
 		handler.tick();
 	}
 	
@@ -108,20 +88,10 @@ public class Game implements Runnable{
 		g = bs.getDrawGraphics();
 		//Clear Screen
 		g.clearRect(0, 0, width, height);
-		
 		//Draw Here!
-		/*
-		if(stateManager != null){
-			stateManager.render(g);
-		}*/
-		
 		g.setColor(Color.white);
 		g.fillRect(0, 0, Display.WIDTH, Display.HEIGHT);
-		
 		handler.render(g);
-		
-		
-		
 		//End Drawing!
 		bs.show();
 		g.dispose();
@@ -186,11 +156,7 @@ public class Game implements Runnable{
 	public int getHeight(){
 		return height;
 	}
-	
-	public StateManager getStateManager() {
-		return stateManager;
-	}
-	
+
 	/**
 	 * Creates new Thread
 	 */
@@ -217,6 +183,6 @@ public class Game implements Runnable{
 	}
 
 	public World getTestWorld() {
-		return testWorld;
+		return world;
 	}
 }

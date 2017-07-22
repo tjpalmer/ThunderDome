@@ -1,5 +1,6 @@
 package virassan.entities.creatures.player;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,7 +10,6 @@ import virassan.entities.creatures.enemies.EnemyType;
 import virassan.entities.creatures.npcs.Merchant;
 import virassan.entities.creatures.npcs.NPC;
 import virassan.entities.creatures.player.traits.Traits;
-import virassan.entities.creatures.utils.Skill;
 import virassan.entities.creatures.utils.SkillTracker;
 import virassan.entities.creatures.utils.Stats;
 import virassan.gfx.Animation;
@@ -31,6 +31,7 @@ public class Player extends Creature{
 	private ArrayList<SkillTracker> skillList;
 	private SkillTracker activeSkill;
 	private boolean skillActive;
+	private int curSkillIndex;
 	
 	// Traits stuff
 	private Traits traits;
@@ -62,6 +63,15 @@ public class Player extends Creature{
 	MouseInput mouseInput;
 	
 	/**
+	 * Constructor for creating Player object before loading from Save file.
+	 * @param handler
+	 * @param id
+	 */
+	public Player(Handler handler, ID id){
+		this(handler, 0, 0, id, 32, 32, "/textures/entities/static/testing_anime_dude.png");
+	}
+	
+	/**
 	 * Constructs the Player
 	 * @param handler the game's Handler
 	 * @param x The spawn x coord of the Player
@@ -76,14 +86,12 @@ public class Player extends Creature{
 		QuestTracker.handler = handler;
 		this.name = "Player";
 		stats = new Stats(this, 150, 75, 75, 1);
-		System.out.println(stats.getMaxStam());
 		stats.setDmgMod(0.02f);
 		stats.setArmorRating(1);
 		damaged = false;
 		npc = false;
 		killList = new HashMap<EnemyType, Integer>();
 		inventory = new Inventory(this);
-		walking = new Animation[5];
 		bounds.x = (int)(x + width/6);
 		bounds.y = (int)(y + 3*height/4);
 		bounds.width = 20;
@@ -94,6 +102,19 @@ public class Player extends Creature{
 		questLog = new QuestLog(this);
 		
 		//Animation Shtuff
+		initAnimation(filepath);
+		
+		//Traits
+		traits = new Traits(this, 3, 5, 3, 5, 2);
+		
+		//Skills
+		skillBar = new SkillTracker[5];
+		skillList = new ArrayList<SkillTracker>();
+		skillActive = false;
+	}
+
+	private void initAnimation(String filepath){
+		walking = new Animation[5];
 		Assets playerSprites = new Assets(filepath);
 		walkLeft = new Animation(350, playerSprites.getWalkingLeft());
 		walkRight = new Animation(350, playerSprites.getWalkingRight());
@@ -104,26 +125,8 @@ public class Player extends Creature{
 		walking[1] = walkDown;
 		walking[2] = walkRight;
 		walking[3] = walkLeft;
-		
-		//Traits
-		traits = new Traits(this, 3, 5, 3, 5, 2);
-		
-		//Skills
-		skillBar = new SkillTracker[5];
-		skillList = new ArrayList<SkillTracker>();
-		/*
-		skillList.add(new SkillTracker(this, Skill.STAB, animation));
-		skillList.add(new SkillTracker(this, Skill.SLASH, animation));
-		skillList.add(new SkillTracker(this, Skill.HEAL_1, animation));
-		skillList.add(new SkillTracker(this, Skill.CHOP, animation));
-		for(int i = 0; i < skillBar.length; i++){
-			if(i < skillList.size()){
-				skillBar[i] = skillList.get(i);
-			}
-		}*/
-		skillActive = false;
 	}
-
+	
 	/**
 	 * Ticks the Player - checking KeyInput, animation, movement, and GameCamera
 	 */
@@ -137,8 +140,8 @@ public class Player extends Creature{
 			
 			move();
 			animation.tick();
-			y = Utils.clamp((int)y, 0, handler.getWorld().getMap().getHeight() * Tile.TILE_HEIGHT - height);
-			x = Utils.clamp((int)x, 0, handler.getWorld().getMap().getWidth() * Tile.TILE_WIDTH - width);
+			y = Utils.clamp((int)y, 0, Handler.WORLD.getMap().getHeight() * Tile.TILE_HEIGHT - height);
+			x = Utils.clamp((int)x, 0, Handler.WORLD.getMap().getWidth() * Tile.TILE_WIDTH - width);
 			handler.getGameCamera().centerOnEntity(this);
 			if(stats.isDamaged()){
 				if(damageTime > 0){
@@ -185,36 +188,6 @@ public class Player extends Creature{
 					timerTwo = 0;
 				}
 			}
-			
-			/*
-			//Attacking
-			attacking(keyInput.A, attackA);
-			attacking(keyInput.W, attackW);
-			attacking(keyInput.S, attackS);
-			attacking(keyInput.D, attackD);
-
-			// Skills Bar
-			
-			if(skillActive){
-				if(mouseInput.isLeftClicked()){
-					System.out.println("Skill active and gonna try the thing");
-					skillAction(activeSkill.getTarget(), activeSkill);
-					skillActive = false;
-					System.out.println("Skill deactive");
-				}
-			}else if(mouseInput.isLeftClicked()){
-				if(!skillActive){
-					for(Skill s : skillBar){
-						if(s != null){
-							if(mouseInput.getMouseBounds().intersects(s.getBounds())){
-								System.out.println("Skill Active!");
-								skillActive = true;
-								activeSkill = s;
-							}
-						}
-					}
-				}
-			}*/
 		}
 	}
 	
@@ -225,6 +198,8 @@ public class Player extends Creature{
 	public void render(Graphics g) {
 		if(animation.getCurrentFrame() != null){
 			g.drawImage(animation.getCurrentFrame(), (int) (x - handler.getGameCamera().getxOffset()), (int) (y - handler.getGameCamera().getyOffset()), null);
+			g.setColor(Color.RED);
+			g.drawRect(getCollisionBounds(-handler.getGameCamera().getxOffset(), -handler.getGameCamera().getyOffset()).x, getCollisionBounds(-handler.getGameCamera().getxOffset(), -handler.getGameCamera().getyOffset()).y, getCollisionBounds(handler.getGameCamera().getxOffset(), handler.getGameCamera().getyOffset()).width, getCollisionBounds(handler.getGameCamera().getxOffset(), handler.getGameCamera().getyOffset()).height);
 		}else{
 			//g.drawImage(sprite, (int) (x - handler.getGameCamera().getxOffset()), (int) (y - handler.getGameCamera().getyOffset()), null);
 		}
@@ -376,5 +351,13 @@ public class Player extends Creature{
 	
 	public ArrayList<SkillTracker> getSkills(){
 		return skillList;
+	}
+	
+	public void setCurSkillIndex(int index){
+		curSkillIndex = index;
+	}
+	
+	public int getCurSkillIndex(){
+		return curSkillIndex;
 	}
 }

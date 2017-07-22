@@ -2,7 +2,6 @@ package virassan.main;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.io.File;
 import java.util.LinkedList;
 
 import virassan.entities.Entity;
@@ -12,8 +11,19 @@ import virassan.gfx.GameCamera;
 import virassan.input.KeyInput;
 import virassan.input.MouseInput;
 import virassan.items.ItemManager;
-import virassan.states.StateManager;
-import virassan.utils.Utils;
+import virassan.main.states.LaunchLoad;
+import virassan.main.states.LaunchMenu;
+import virassan.main.states.LaunchNew;
+import virassan.main.states.MenuCharacter;
+import virassan.main.states.MenuInventory;
+import virassan.main.states.MenuLevelUp;
+import virassan.main.states.MenuMap;
+import virassan.main.states.MenuQuest;
+import virassan.main.states.MenuSettings;
+import virassan.main.states.MenuSkills;
+import virassan.main.states.NPCDialog;
+import virassan.main.states.NPCShop;
+import virassan.main.states.States;
 import virassan.world.World;
 import virassan.world.maps.Map;
 
@@ -39,12 +49,26 @@ public class Handler {
 		SELECTION_LOWLIGHT = new Color(0, 0, 0, 70),
 		SELECTION_MIDLIGHT = new Color(235, 235, 235, 30),
 		ITEM_MENU = new Color(0, 0, 0, 215);
-
+	// STATES
+	public static NPCDialog NPCDIALOG;
+	public static NPCShop NPCSHOP;
+	public static MenuCharacter MENUCHAR;
+	public static MenuInventory MENUINV;
+	public static MenuMap MENUMAP;
+	public static MenuQuest MENUQUEST;
+	public static MenuSettings MENUSET;
+	public static MenuSkills MENUSKILLS;
+	public static MenuLevelUp MENULVL;
+	public static LaunchMenu LAUNCHMENU;
+	public static LaunchNew LAUNCHNEW;
+	public static LaunchLoad LAUNCHLOAD;
+	public static World WORLD;
 	
+	private Player player;
 	private Game game;
-	private World world;
+	private States curState;
 	
-	private boolean isNaming, isSave;
+	//private boolean isNaming;
 	
 	public LinkedList<Entity> object = new LinkedList<Entity>();
 	
@@ -54,8 +78,21 @@ public class Handler {
 	 */
 	public Handler(Game game){
 		this.game = game;
-		isNaming = true;
-		isSave = true;
+		//isNaming = true;
+		player = new Player(this, ID.Player);
+		LAUNCHLOAD = new LaunchLoad(this);
+		LAUNCHNEW = new LaunchNew(this);
+		LAUNCHMENU = new LaunchMenu(this);
+		MENULVL = new MenuLevelUp(this);
+		MENUQUEST = new MenuQuest(this);
+		MENUSET = new MenuSettings(this);
+		MENUSKILLS = new MenuSkills(this);
+		MENUINV = new MenuInventory(this);
+		MENUMAP = new MenuMap(this);
+		MENUCHAR = new MenuCharacter(this);
+		NPCDIALOG = new NPCDialog(this);
+		NPCSHOP = new NPCShop(this);
+		curState = States.LaunchMenu;
 	}
 	
 	/**
@@ -63,28 +100,57 @@ public class Handler {
 	 */
 	public void tick()
 	{
-		//TODO: changed isNaming to false to skip it for testing purposes
+		/*
 		isNaming = false;
 		if(!isNaming){
 			world.tick();
 		}else if(isNaming){
 			getKeyInput().tick();
 		}
-		//TODO: figure out how to see if there's any JSON files in the "/saves/" folder
-		if(isSave){
-			boolean saveFile = new File("c:\\Users\\Virassan\\Documents\\!ThunderDome\\ThunderDome\\ThunderDome\\res\\saves\\testsave.json").isFile();
-			if(saveFile){
-				getKeyInput().tick();
-				//TODO: do the loadGame thing
-				if(getKeyInput().enter){
-					isSave = false;
-				}else if(getKeyInput().space){
-					Utils.loadGame(this, "c:\\Users\\Virassan\\Documents\\!ThunderDome\\ThunderDome\\ThunderDome\\res\\saves\\testsave.json");
-					isSave = false;
-				}
-			}else{
-				isSave = false;
-			}
+		*/
+		switch(curState){
+		case LaunchLoad:
+			LAUNCHLOAD.tick();
+			break;
+		case LaunchMenu:
+			LAUNCHMENU.tick();
+			break;
+		case LaunchNew:
+			LAUNCHNEW.tick();
+			break;
+		case MenuCharacter:
+			MENUCHAR.tick();
+			break;
+		case MenuInventory:
+			MENUINV.tick();
+			break;
+		case MenuLevelUp:
+			MENULVL.tick();
+			break;
+		case MenuMap:
+			MENUMAP.tick();
+			break;
+		case MenuQuest:
+			MENUQUEST.tick();
+			break;
+		case MenuSettings:
+			MENUSET.tick();
+			break;
+		case MenuSkills:
+			MENUSKILLS.tick();
+			break;
+		case NPCDialog:
+			NPCDIALOG.tick();
+			break;
+		case NPCShop:
+			NPCSHOP.tick();
+			break;
+		case World:
+			WORLD.tick();
+			break;
+		default:
+			LAUNCHMENU.tick();
+			break;
 		}
 	}
 	
@@ -94,6 +160,7 @@ public class Handler {
 	 */
 	public void render(Graphics g)
 	{
+		/*
 		if(isNaming){
 			g.setColor(Color.LIGHT_GRAY);
 			g.fillRect(200, 200, 200, 20);
@@ -106,18 +173,68 @@ public class Handler {
 				getPlayer().setName(text);
 				getKeyInput().isTyping(false);
 			}
-		}else if(isSave){
-			g.setColor(Color.BLACK);
-			g.drawString("To Start a New Game press ENTER", 200, 190);
-			g.drawString("To Load the Last Save press SPACE", 200, 220);
 		}
-		else{
-			world.render(g);
+		*/
+		switch(curState){
+		case LaunchLoad:
+			LAUNCHLOAD.render(g);
+			break;
+		case LaunchMenu:
+			LAUNCHMENU.render(g);
+			break;
+		case LaunchNew:
+			LAUNCHNEW.render(g);
+			break;
+		case MenuCharacter:
+			MENUCHAR.render(g);
+			break;
+		case MenuInventory:
+			MENUINV.render(g);
+			break;
+		case MenuLevelUp:
+			MENULVL.render(g);
+			break;
+		case MenuMap:
+			MENUMAP.render(g);
+			break;
+		case MenuQuest:
+			MENUQUEST.render(g);
+			break;
+		case MenuSettings:
+			MENUSET.render(g);
+			break;
+		case MenuSkills:
+			MENUSKILLS.render(g);
+			break;
+		case NPCDialog:
+			NPCDIALOG.render(g);
+			break;
+		case NPCShop:
+			NPCSHOP.render(g);
+			break;
+		case World:
+			WORLD.render(g);
+			break;
+		default:
+			LAUNCHMENU.render(g);
+			break;
 		}
 	}	
 	
 	// GETTERS AND SETTERS
-
+	public void setWorld(World world){
+		WORLD = world;
+		player = world.getPlayer();
+	}
+	
+	public void setState(States state){
+		curState = state;
+	}
+	
+	public States getState(){
+		return curState;
+	}
+	
 	public Game getGame() {
 		return game;
 	}
@@ -126,14 +243,6 @@ public class Handler {
 		this.game = game;
 	}
 
-	public World getWorld() {
-		return world;
-	}
-
-	public void setWorld(World world) {
-		this.world = world;
-	}
-	
 	public int getWidth(){
 		return game.getWidth();
 	}
@@ -153,17 +262,13 @@ public class Handler {
 	public MouseInput getMouseInput(){
 		return game.getMouseInput();
 	}
-	
-	public StateManager getStateManager(){
-		return game.getStateManager();
-	}
 
 	public Player getPlayer() {
-		return world.getPlayer();
+		return player;
 	}
 	
 	public ItemManager getItemManager(){
-		return world.getItemManager();
+		return WORLD.getItemManager();
 	}
 	
 	public EntityManager getEntityManager(){
@@ -171,6 +276,6 @@ public class Handler {
 	}
 	
 	public Map getMap(){
-		return world.getMap();
+		return WORLD.getMap();
 	}
 }

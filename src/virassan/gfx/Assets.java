@@ -2,9 +2,7 @@ package virassan.gfx;
 
 import java.awt.image.BufferedImage;
 
-import virassan.entities.statics.Statics;
 import virassan.world.maps.Tile;
-import virassan.world.maps.Tiles;
 
 /**
  * Loads, divvies up SpriteSheets, and saves BufferedImages to variables
@@ -19,6 +17,7 @@ public class Assets {
 	
 	private BufferedImage front_1, front_Up, front_3, left_1, left_Up, left_3, right_1, right_Up, right_3, back_1, back_Up, back_3;
 	public static BufferedImage lava, water, idk, grass, flowers_1, flowers_2, stone_rock, animeDudeStanding, button_blue, button_green, button_pink, button_red;
+	
 	
 	//menu GUI
 	public static BufferedImage menu, invCharMenu, questMenu, skillMenu, invItemInfo;
@@ -35,10 +34,40 @@ public class Assets {
 	public static BufferedImage buff001, buff002;
 	
 	// Items
-	public static BufferedImage slime, bandaid, tire, feather;
-	public static BufferedImage apple, toast, green_apple, cherry;
-	public static BufferedImage sword, broad_sword, dagger, staff, woodcutter_axe;
-	public static BufferedImage iron_cuirass, iron_helm, iron_boots, iron_gauntlet, iron_greaves;
+	private static final SpriteSheet food = new SpriteSheet(ImageLoader.loadImage("/textures/items/food.png"));
+	private static final SpriteSheet weapons = new SpriteSheet(ImageLoader.loadImage("/textures/items/weapons.png"));
+	private static final SpriteSheet armor = new SpriteSheet(ImageLoader.loadImage("/textures/items/armor.png"));
+	private static final SpriteSheet junk = new SpriteSheet(ImageLoader.loadImage("/textures/items/junk.png"));
+	
+	// ITEMS YO
+	public static BufferedImage apple = food.sprite(0, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	green_apple = food.sprite(ITEM_WIDTH, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	toast = food.sprite(ITEM_WIDTH * 2, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	cherry = food.sprite(ITEM_WIDTH * 3, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	// TODO: draw cherry
+	
+	slime = junk.sprite(0, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	bandaid = junk.sprite(ITEM_WIDTH, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	tire = junk.sprite(ITEM_WIDTH * 2, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	feather = junk.sprite(ITEM_WIDTH * 3, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	
+	sword = weapons.sprite(0, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	broad_sword = weapons.sprite(ITEM_WIDTH, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	dagger = weapons.sprite(ITEM_WIDTH * 2, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	staff = weapons.sprite(0, ITEM_WIDTH, ITEM_WIDTH, ITEM_HEIGHT),
+	woodcutter_axe = weapons.sprite(0, ITEM_WIDTH * 2, ITEM_WIDTH, ITEM_HEIGHT),
+	
+	// TODO: draw these armor items yo
+	iron_boots = armor.sprite(0, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	iron_cuirass = armor.sprite(ITEM_WIDTH, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	iron_gauntlet = armor.sprite(ITEM_WIDTH * 2, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	iron_greaves = armor.sprite(ITEM_WIDTH * 3, 0, ITEM_WIDTH, ITEM_HEIGHT),
+	iron_helm = armor.sprite(ITEM_WIDTH * 4, 0, ITEM_WIDTH, ITEM_HEIGHT);
+	
+	
+	public static SpriteSheet warp_portal = new SpriteSheet(ImageLoader.loadImage("/textures/tiles/statics/warp_portal_spritesheet.png"));
+	public static BufferedImage[] warp_portal_images = new BufferedImage[]{Assets.warp_portal.sprite(0, 0, 64, 64), Assets.warp_portal.sprite(64, 0, 64, 64), Assets.warp_portal.sprite(64*2, 0, 64, 64), Assets.warp_portal.sprite(0, 64, 64, 64), Assets.warp_portal.sprite(64, 64, 64, 64), Assets.warp_portal.sprite(64*2, 64, 64, 64)};
+	
 	
 	private BufferedImage[] walkingLeft, 
 			walkingRight, 
@@ -53,10 +82,6 @@ public class Assets {
 		SpriteSheet testing = new SpriteSheet(ImageLoader.loadImage("/textures/tiles/TextureSpriteSheet.png"));
 		// SpriteSheet tiles = new SpriteSheet(ImageLoader.loadImage("/textures/tiles/TileSpriteSheet.png"));
 		SpriteSheet animeDude = new SpriteSheet(ImageLoader.loadImage("/textures/entities/static/testing_anime_dude.png"));
-		SpriteSheet food = new SpriteSheet(ImageLoader.loadImage("/textures/items/food.png"));
-		SpriteSheet weapons = new SpriteSheet(ImageLoader.loadImage("/textures/items/weapons.png"));
-		SpriteSheet armor = new SpriteSheet(ImageLoader.loadImage("/textures/items/armor.png"));
-		SpriteSheet junk = new SpriteSheet(ImageLoader.loadImage("/textures/items/junk.png"));
 		SpriteSheet skills = new SpriteSheet(ImageLoader.loadImage("/textures/skills/skill01_sheet.png"));
 		button_blue = ImageLoader.loadImage("/textures/buttons/Button_blue.png");		
 		button_green = ImageLoader.loadImage("/textures/buttons/Button_green.png");
@@ -114,8 +139,7 @@ public class Assets {
 		stone_rock = testing.sprite(Tile.TILE_WIDTH * 2, 0, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
 	
 		// TILES BRO
-		Tiles.init();
-		Statics.init();
+		Tile.init();
 		
 		// ITEMS YO
 		apple = food.sprite(0, 0, ITEM_WIDTH, ITEM_HEIGHT);
@@ -153,26 +177,21 @@ public class Assets {
 		buff001 = ImageLoader.loadImage("/textures/buffs/buff001.png");
 	}
 	
-	/**
-	 * Constructs a new Asset - used for walking Animation
-	 * @param filepath the walking Animation SpriteSheet file
-	 */
-	public Assets(String filepath){
+	public Assets(String filepath, int height, int width){
 		SpriteSheet sheet = new SpriteSheet(ImageLoader.loadImage(filepath));
 		
-		
-		front_1 = sheet.sprite(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-		front_Up = sheet.sprite(IMAGE_WIDTH, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-		front_3 = sheet.sprite(IMAGE_WIDTH*2, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-		left_1 = sheet.sprite(0, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
-		left_Up = sheet.sprite(IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
-		left_3 = sheet.sprite(IMAGE_WIDTH*2, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
-		right_1 = sheet.sprite(0, IMAGE_HEIGHT*2, IMAGE_WIDTH, IMAGE_HEIGHT);
-		right_Up = sheet.sprite(IMAGE_WIDTH, IMAGE_HEIGHT*2, IMAGE_WIDTH, IMAGE_HEIGHT);
-		right_3 = sheet.sprite(IMAGE_WIDTH*2, IMAGE_HEIGHT*2, IMAGE_WIDTH, IMAGE_HEIGHT);
-		back_1 = sheet.sprite(0, IMAGE_HEIGHT*3, IMAGE_WIDTH, IMAGE_HEIGHT);
-		back_Up = sheet.sprite(IMAGE_WIDTH, IMAGE_HEIGHT*3, IMAGE_WIDTH, IMAGE_HEIGHT);
-		back_3 = sheet.sprite(IMAGE_WIDTH*2, IMAGE_HEIGHT*3, IMAGE_WIDTH, IMAGE_HEIGHT);
+		front_1 = sheet.sprite(0, 0, height, width);
+		front_Up = sheet.sprite(width, 0, width, height);
+		front_3 = sheet.sprite(width*2, 0, width, height);
+		left_1 = sheet.sprite(0, height, width, height);
+		left_Up = sheet.sprite(width, height, width, height);
+		left_3 = sheet.sprite(width*2, height, width, height);
+		right_1 = sheet.sprite(0, height*2, width, height);
+		right_Up = sheet.sprite(width, height*2, width, height);
+		right_3 = sheet.sprite(width*2, height*2, width, height);
+		back_1 = sheet.sprite(0, height*3, width, height);
+		back_Up = sheet.sprite(width, height*3, width, height);
+		back_3 = sheet.sprite(width*2, height*3, width, height);
 		
 		walkingLeft = new BufferedImage[3];
 		walkingRight = new BufferedImage[3];
@@ -193,6 +212,14 @@ public class Assets {
 		walkingDown[1] = front_Up;
 		walkingDown[2] = front_3;
 		standing[0] = front_1;
+	}
+	
+	/**
+	 * Constructs a new Asset - used for walking Animation
+	 * @param filepath the walking Animation SpriteSheet file
+	 */
+	public Assets(String filepath){
+		this(filepath, IMAGE_HEIGHT, IMAGE_WIDTH);
 	}
 	
 	public Assets(String filepath, int numberOfFrames, int imageWidth, int imageHeight){

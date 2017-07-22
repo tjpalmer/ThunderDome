@@ -2,10 +2,7 @@ package virassan.utils;
 
 import java.awt.Color;
 import java.awt.FontMetrics;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,8 +28,10 @@ import virassan.entities.creatures.utils.SkillTracker;
 import virassan.items.Equip;
 import virassan.items.Item;
 import virassan.main.Handler;
+import virassan.main.ID;
 import virassan.quests.Quest;
 import virassan.quests.QuestTracker;
+import virassan.world.World;
 
 /**
  * Nifty Utility Stuff
@@ -41,11 +40,9 @@ import virassan.quests.QuestTracker;
  */
 public class Utils {
 
-	/**
-	 * 
-	 * @param path
-	 * @return
-	 */
+
+	//TODO: Figure out why this unused function is here
+	/*
 	public static String loadFileAsString(String path){
 		StringBuilder builder = new StringBuilder();
 		
@@ -61,6 +58,7 @@ public class Utils {
 		}
 		return builder.toString();
 	}
+	*/
 	
 	/**
 	 * Converts String to an int
@@ -180,7 +178,6 @@ public class Utils {
 		return map;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static Map toMap(QuestTracker quest){
 		HashMap<String, Object> map = new HashMap<>();
 		map.put("quest", quest.getQuest().name());
@@ -253,6 +250,7 @@ public class Utils {
 	 */
 	@SuppressWarnings("unchecked")
 	public static void saveGame(Handler handler){
+		//TODO: later add Player's Image
 		Player player = handler.getPlayer();
 		JSONObject obj = new JSONObject();
 		obj.put("player_name", player.getName());
@@ -264,9 +262,8 @@ public class Utils {
 		obj.put("int", new Integer(player.getTraits().getIntelligence()));
 		obj.put("str", new Integer(player.getTraits().getStrength()));
 		obj.put("res", new Integer(player.getTraits().getResilience()));
-		obj.put("xOffset", new Integer((int)handler.getGameCamera().getxOffset()));
-		obj.put("yOffset", new Integer((int)handler.getGameCamera().getyOffset()));
-		obj.put("map_name", handler.getMap().getMapName());
+		obj.put("x", new Integer((int)handler.getPlayer().getX()));
+		obj.put("y", new Integer((int)handler.getPlayer().getY()));
 		obj.put("map", handler.getMap().getFilepath());
 		JSONArray stuff = new JSONArray();
 		
@@ -361,9 +358,13 @@ public class Utils {
 	 * @param filepath The filepath of the save file
 	 */
 	public static void loadGame(Handler handler, String filepath){
+		//TODO: instead of setting variables for the Player - create a NEW Player object with these values
+		Player player = new Player(handler, ID.Player);
+		handler.setWorld(new World(handler, player));
 		JSONObject jsonObject;
-		long playerLevel = 0, playerExp = 0, charisma = 0, resilience = 0, strength = 0, intelligence = 0, dexterity = 0, xOffset = 0, yOffset = 0;
-		String map = null, mapName = null, playerName = null;
+		//TODO: later add Player's Image
+		long playerLevel = 0, playerExp = 0, charisma = 0, resilience = 0, strength = 0, intelligence = 0, dexterity = 0, x = 0, y = 0;
+		String map = null, playerName = null;
 		String[] skillBar = new String[5];
 		HashMap<String, Long> inventory = new HashMap<>();
 		ArrayList<String> equip = new ArrayList<>();
@@ -381,10 +382,9 @@ public class Utils {
 			strength = (Long)jsonObject.get("str");
 			intelligence = (Long)jsonObject.get("int");
 			dexterity = (Long)jsonObject.get("dex");
-			xOffset = (Long)jsonObject.get("xOffset");
-			yOffset = (Long)jsonObject.get("yOffset");
+			x = (Long)jsonObject.get("x");
+			y = (Long)jsonObject.get("y");
 			map = (String)jsonObject.get("map");
-			mapName = (String)jsonObject.get("map_name");
 			JSONArray arrays = (JSONArray)jsonObject.get("arrays");
 			for(int i = 0; i < arrays.size(); i++){
 				switch(i){
@@ -473,71 +473,73 @@ public class Utils {
 			System.out.println(filepath);
 		}
 		try{
-			handler.getPlayer().setName(playerName);
-			handler.getWorld().setMap(map);
-			handler.getWorld().getMap().setMapName(mapName);
+			player.setName(playerName);
+			Handler.WORLD.setMap(map);
 		}catch(NullPointerException e){
 			if(playerName == null){
-				handler.getPlayer().setName("Default");
+				player.setName("Default");
+				System.out.println("----in loadGame playerName is null. Using Default");
 			}if(map == null){
-				handler.getWorld().setMap("res/worlds/maps/world3.txt");
+				Handler.WORLD.setMap("res/worlds/maps/hajime_village.json");
+				System.out.println("----in loadGame map is null. Using Default");
 			}
 		}
 		if(playerLevel == 0){
-			handler.getPlayer().getStats().setLevel(1);
+			player.getStats().setLevel(1);
 		}else{
 			for(int i = 1; i < (int)playerLevel; i++){
-				handler.getPlayer().getStats().levelUp();
+				player.getStats().levelUp();
 			}
 		}
-		handler.getPlayer().getStats().setExperience((int)playerExp);
-		handler.getGameCamera().setxOffset((float)xOffset);
-		handler.getGameCamera().setyOffset((float)yOffset);
+		System.out.println("Player is: " + handler.getPlayer());
+		player.getStats().setExperience((int)playerExp);
+		player.setX((float)x);
+		player.setY((float)y);
 		if(charisma == 0){
-			handler.getPlayer().getTraits().levelChar(1);
+			player.getTraits().levelChar(1);
 		}else{
-			handler.getPlayer().getTraits().levelChar((int)charisma);
+			player.getTraits().levelChar((int)charisma);
 		}if(resilience == 0){
-			handler.getPlayer().getTraits().levelRes(1);
+			player.getTraits().levelRes(1);
 		}else{
-			handler.getPlayer().getTraits().levelRes((int)resilience);
+			player.getTraits().levelRes((int)resilience);
 		}if(strength == 0){
-			handler.getPlayer().getTraits().levelStr(1);
+			player.getTraits().levelStr(1);
 		}else{
-			handler.getPlayer().getTraits().levelStr((int)strength);
+			player.getTraits().levelStr((int)strength);
 		}if(dexterity == 0){
-			handler.getPlayer().getTraits().levelDex(1);
+			player.getTraits().levelDex(1);
 		}else{
-			handler.getPlayer().getTraits().levelDex((int)dexterity);
+			player.getTraits().levelDex((int)dexterity);
 		}if(intelligence == 0){
-			handler.getPlayer().getTraits().levelInt(1);
+			player.getTraits().levelInt(1);
 		}else{
-			handler.getPlayer().getTraits().levelInt((int)intelligence);
+			player.getTraits().levelInt((int)intelligence);
 		}
 		for(String str : skills){
-			handler.getPlayer().addSkill(new SkillTracker(handler.getPlayer(), Skill.valueOf(str), handler.getPlayer().getAnimation()));
+			player.addSkill(new SkillTracker(player, Skill.valueOf(str), player.getAnimation()));
 		}
 		for(int i = 0; i < skillBar.length; i++){
 			if(!skillBar[i].equals("")){
-				for(SkillTracker skill : handler.getPlayer().getSkills()){
+				for(SkillTracker skill : player.getSkills()){
 					if(skill.getSkillType() == Skill.valueOf(skillBar[i])){
-						handler.getPlayer().setSkillBar(skill, i);
+						player.setSkillBar(skill, i);
 					}
 				}
 			}
 		}
 		for(String str : completedQuests){
-			handler.getPlayer().getQuestLog().addComplete(new QuestTracker(Quest.valueOf(str)));
+			player.getQuestLog().addComplete(new QuestTracker(Quest.valueOf(str)));
 		}
 		for(String str : buffs.keySet()){
-			handler.getPlayer().getStats().addBuff(new BuffTracker(handler.getPlayer(), Buff.valueOf(str)));
+			player.getStats().addBuff(new BuffTracker(player, Buff.valueOf(str)));
 		}
 		for(String str : inventory.keySet()){
-			handler.getPlayer().getInventory().addItems(Item.valueOf(str), inventory.get(str).intValue());
+			player.getInventory().addItems(Item.valueOf(str), inventory.get(str).intValue(), false);
 		}
 		for(String str : equip){
 			if(!str.equals("")){
-				handler.getPlayer().getStats().equip(Item.valueOf(str));
+				player.getStats().equip(Item.valueOf(str));
 			}
 		}
 		for(String str : activeQuests.keySet()){

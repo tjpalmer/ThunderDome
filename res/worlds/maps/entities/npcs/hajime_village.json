@@ -1,0 +1,29 @@
+{
+	"NPCs":
+	[
+		{"name":"Timmy the Merchant",
+		"type":"Merchant",
+		"x":600,
+		"y":100,
+		"width":64,
+		"height":64,
+		"image":"/textures/entities/npc_test.png",
+		"items":[
+				{"item":"APPLE", "stack":10},
+				{"item":"CHERRY", "stack":5},
+				{"item":"SWORD", "stack":1}]
+		},
+		{"name":"Jimmy the Useless",
+		"type":"NPC",
+		"x":500,
+		"y":150,
+		"width":64,
+		"height":64,
+		"image":"/textures/entities/npc_test.png",
+		"quests":[
+				{"ID":"QUEST_1"},
+				{"ID":"QUEST_2"},
+				{"ID":"QUEST_3"}]
+		}
+	]
+}

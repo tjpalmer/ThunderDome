@@ -71,7 +71,7 @@ public class ItemManager{
 				}
 				if(playerDist <= 5){
 					//TODO : add item to itemspickedup list
-					handler.getPlayer().getInventory().addItems(items.get(i).getItem());
+					handler.getPlayer().getInventory().addItems(items.get(i).getItem(), true);
 					items.remove(items.get(i));
 					i--;
 				}

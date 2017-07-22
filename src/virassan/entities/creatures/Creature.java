@@ -9,6 +9,8 @@ import virassan.entities.creatures.npcs.NPC;
 import virassan.entities.creatures.utils.SkillTracker;
 import virassan.entities.creatures.utils.Stats;
 import virassan.gfx.hud.EventText;
+import virassan.gfx.hud.SkillText;
+import virassan.items.Item;
 import virassan.main.Handler;
 import virassan.main.ID;
 import virassan.utils.Utils;
@@ -79,7 +81,7 @@ public abstract class Creature extends Entity{
 					!collisionWithTile(tempX, (int)(y + bounds.y + bounds.height)/ Tile.TILE_HEIGHT)){
 				if(npc){
 					if(Utils.clamp(x + velX, walkBounds.x, walkBounds.x + walkBounds.width) == x + velX){
-						x = Utils.clamp(velX+x, 0, handler.getWorld().getMap().getWidth()*64);
+						x = Utils.clamp(velX+x, 0, Handler.WORLD.getMap().getWidth()*64);
 					}else{
 						setisMoving(false);
 					}
@@ -106,7 +108,7 @@ public abstract class Creature extends Entity{
 			if(!collisionWithTile(tempX, (int)(y + bounds.y)/ Tile.TILE_HEIGHT) && !collisionWithTile(tempX, (int)(y+bounds.y + bounds.height)/ Tile.TILE_HEIGHT)){
 				if(npc){
 					if(Utils.clamp(x + velX, walkBounds.x, walkBounds.x + walkBounds.width) == x + velX){
-						x = Utils.clamp(velX+x, 0, handler.getWorld().getMap().getWidth()*64);
+						x = Utils.clamp(velX+x, 0, Handler.WORLD.getMap().getWidth()*64);
 					}else{
 						setisMoving(false);
 					}
@@ -136,7 +138,7 @@ public abstract class Creature extends Entity{
 					!collisionWithTile((int)((x + bounds.x + bounds.width) / Tile.TILE_WIDTH), tempY)){
 				if(npc){
 					if(Utils.clamp(y + velY, walkBounds.y, walkBounds.y + walkBounds.height) == y + velY){
-						y = Utils.clamp(velY+y, 0, handler.getWorld().getMap().getHeight()*64);
+						y = Utils.clamp(velY+y, 0, Handler.WORLD.getMap().getHeight()*64);
 					}else{
 						setisMoving(false);
 					}
@@ -162,7 +164,7 @@ public abstract class Creature extends Entity{
 					!collisionWithTile((int) (x + bounds.x + bounds.width) / Tile.TILE_WIDTH, tempY)){
 				if(npc){
 					if(Utils.clamp(y + velY, walkBounds.y, walkBounds.y + walkBounds.height) == y + velY){
-						y = Utils.clamp(velY+y, 0, handler.getWorld().getMap().getHeight()*64);
+						y = Utils.clamp(velY+y, 0, Handler.WORLD.getMap().getHeight()*64);
 					}else{
 						if(walkBounds.y <= 0 || walkBounds.height <= 0){
 						}
@@ -201,6 +203,32 @@ public abstract class Creature extends Entity{
 		return true;
 	}
 	
+	public boolean attack(Item weapon, Creature entity){
+		float crit = ((float)gen.nextInt(100))/ 100F;
+		int range = weapon.getWeapRange();
+		double distance = Math.sqrt(Math.pow((x + (width/2)) - (entity.getX() + (entity.getWidth()/2)), 2) + Math.pow((y + (height/2)) - (entity.getY()+ (entity.getHeight()/2)), 2));
+		if(distance <= range){
+			float temp = weapon.getDmgAmt() + (float)(weapon.getDmgAmt() * stats.getDmgMod());
+			if(crit < stats.getCritChance()){
+				float critAmt = (temp * stats.getCritMult());
+				temp += critAmt;
+				if(entity instanceof Enemy){
+					stats.getEventList().add(new EventText(this, handler, "CRITICAL HIT", (int)x, (int)y));
+				}
+			}
+			entity.getStats().damage(temp - (entity.getStats().getArmorRating() * entity.getStats().getArmorPer()));
+			if(entity instanceof Enemy){
+				NPCDeath((Enemy)entity);
+			}
+			entity.setVelX(0);
+			entity.setVelY(0);
+			return true;
+		}else{
+			Handler.WORLD.getHUD().addSkillList(new SkillText(handler, "Out of Range", Handler.LAVENDER, (int)entity.getX()-10, (int)entity.getY()-10));
+		}
+		return false;
+	}
+	
 	public boolean attack(SkillTracker skill, Creature entity, String typeOfDamage){
 		// entity.getStats().damage((float)skill.getSkillType().getEffectAmt());
 		switch(typeOfDamage){
@@ -222,12 +250,17 @@ public abstract class Creature extends Entity{
 		return true;
 	}
 	
+	/**
+	 * Attacking for Enemies
+	 * @param attack the attack the Enemy uses
+	 * @return true if the attack hits
+	 */
 	public boolean attack(Attack attack){
 		float crit = ((float)gen.nextInt(100))/ 100F;
 		if(attackBounds != null){
 			attackBounds.width = attack.getWidth();
 			attackBounds.height = attack.getHeight();
-			for(Entity e : handler.getWorld().getMap().getEntityManager().getEntities()){
+			for(Entity e : Handler.WORLD.getMap().getEntityManager().getEntities()){
 				if(id == e.getId()){
 					continue;
 				}
@@ -240,21 +273,8 @@ public abstract class Creature extends Entity{
 							if(crit < stats.getCritChance()){
 								float critAmt = (temp * stats.getCritMult());
 								temp += critAmt;
-								if(entity instanceof Enemy){
-									stats.getEventList().add(new EventText(this, handler, "CRITICAL HIT", (int)x, (int)y));
-								}
 							}
-							temp += stats.getWeapDmg();
-							if(Math.abs(stats.getLevel() - entity.stats.getLevel()) >= 5){
-								entity.getStats().damage(temp - (entity.getStats().getArmorRating() * entity.getStats().getArmorPer()) + lvlDiff);
-							}else{
-								entity.getStats().damage(temp - (entity.getStats().getArmorRating() * entity.getStats().getArmorPer()));
-							}
-							if(entity instanceof Enemy){
-								NPCDeath((Enemy)entity);
-							}
-							entity.setVelX(0);
-							entity.setVelY(0);
+							entity.getStats().damage(temp - (entity.getStats().getArmorRating() * entity.getStats().getArmorPer()));
 							return true;
 						}
 					}
@@ -291,11 +311,11 @@ public abstract class Creature extends Entity{
 	}
 	
 	private boolean collisionWithTile(int x, int y){
-		return handler.getWorld().getMap().getTile(x, y).isSolid();
+		return Handler.WORLD.getMap().getTile(x, y).isSolid();
 	}
 	
 	private float collisionDamage(int x, int y){
-		return handler.getWorld().getMap().getTile(x, y).getCollisionDamage();
+		return Handler.WORLD.getMap().getTile(x, y).getCollisionDamage();
 	}
 	
 	public void NPCDeath(Enemy e){

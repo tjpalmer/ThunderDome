@@ -51,10 +51,10 @@ public class SkillTracker {
 				}
 				skillCount = 0;
 			}else{
-				entity.getHandler().getWorld().getHUD().addSkillList(new SkillText(entity.getHandler(), "Out of Range", Handler.LAVENDER, (int)targ.getX()-10, (int)targ.getY()-10));
+				Handler.WORLD.getHUD().addSkillList(new SkillText(entity.getHandler(), "Out of Range", Handler.LAVENDER, (int)targ.getX()-10, (int)targ.getY()-10));
 			}
 		}else{
-			entity.getHandler().getWorld().getHUD().addSkillList(new SkillText(entity.getHandler(), "Skill Not Ready Yet", Handler.LAVENDER, (int)from.getX() - 20, (int)from.getY()-10));
+			Handler.WORLD.getHUD().addSkillList(new SkillText(entity.getHandler(), "Skill Not Ready Yet", Handler.LAVENDER, (int)from.getX() - 20, (int)from.getY()-10));
 		}
 	}
 	

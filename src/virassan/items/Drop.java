@@ -11,17 +11,17 @@ public class Drop implements Comparable{
 	private Vector2F pos;
 	
 	public Drop(Item item, double chance) {
-		// TODO Auto-generated constructor stub
 		this.item = item;
 		this.chance = chance;
 	}
 	
-	
 	public boolean isDropped(){
 		double ran = new Random().nextDouble();
 		if(ran <= chance){
+			//System.out.println("Item: " + item + " ran: " + ran + " - chance: " + chance);
 			return true;
 		}
+		//System.out.println("Item: " + item + " ran: " + ran + " - chance: " + chance);
 		return false;
 	}
 
@@ -37,10 +37,13 @@ public class Drop implements Comparable{
 		this.chance = chance;
 	}
 	
+	public double getChance(){
+		return chance;
+	}
+	
 	public Item getItem(){
 		return item;
 	}
-
 
 	@Override
 	public int compareTo(Object o) {

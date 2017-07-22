@@ -8,11 +8,9 @@ public class LinkedQueue{
 	private Node head;
 	
 	public LinkedQueue() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public boolean addAll(Collection c) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -21,12 +19,10 @@ public class LinkedQueue{
 	}
 
 	public boolean contains(Node o) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	public boolean containsAll(Collection c) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -38,22 +34,18 @@ public class LinkedQueue{
 	}
 
 	public Iterator iterator() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public boolean remove(Node o) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	public boolean removeAll(Collection c) {
-		// TODO
 		return false;
 	}
 
 	public boolean retainAll(Collection c) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -70,12 +62,18 @@ public class LinkedQueue{
 	}
 
 	public Node[] toArray() {
-		// TODO Auto-generated method stub
-		return null;
+		Node[] temp = new Node[size()];
+		Node cur = head;
+		while(cur != null){
+			for(int i = 0; i < temp.length; i++){
+				temp[i] = cur;
+				cur = cur.getNext();
+			}
+		}
+		return temp;
 	}
 
 	public Node[] toArray(Node[] a) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -90,12 +88,10 @@ public class LinkedQueue{
 	}
 
 	public boolean offer(Node e) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	public Node peek() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

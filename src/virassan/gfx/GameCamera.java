@@ -26,8 +26,8 @@ public class GameCamera {
 	 * Checks to see if at the edges of the world/map
 	 */
 	public void checkBlankSpace(){
-		xOffset = Utils.clamp((int)xOffset, 0, handler.getWorld().getMap().getWidth() * Tile.TILE_WIDTH - handler.getWidth());
-		yOffset = Utils.clamp((int)yOffset, 0, handler.getWorld().getMap().getHeight() * Tile.TILE_HEIGHT - handler.getHeight());
+		xOffset = Utils.clamp((int)xOffset, 0, Handler.WORLD.getMap().getWidth() * Tile.TILE_WIDTH - handler.getWidth());
+		yOffset = Utils.clamp((int)yOffset, 0, Handler.WORLD.getMap().getHeight() * Tile.TILE_HEIGHT - handler.getHeight());
 	}
 	
 	/**

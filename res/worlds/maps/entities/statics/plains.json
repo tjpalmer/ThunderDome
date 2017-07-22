@@ -1,0 +1,15 @@
+{
+	"statics":
+	[
+		{"WATER":
+		[
+			{"asset": "water", "solid":true, "height":64, "width":64}
+		]
+		},
+		{"FLOWER_1":
+		[
+			{"asset": "flower_1", "solid":false, "height":32, "width":32}
+		]
+		}
+	]
+}

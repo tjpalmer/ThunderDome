@@ -59,7 +59,6 @@ public class Merchant extends Creature{
 		this.buyItems = buyItems;
 		for(Item item : buyItems.keySet()){
 			buyList.add(item);
-			
 		}
 		buyList.sort(itemSorter);
 	}
@@ -116,12 +115,13 @@ public class Merchant extends Creature{
 		if(curList == buyList){
 			if((handler.getPlayer().getGold() - price) >= 0){
 				buyItems.replace(item, buyItems.get(item) - 1);
-				handler.getPlayer().getInventory().addItems(item);
+				handler.getPlayer().getInventory().addItems(item, true);
 			}
 		}else if(curList == sellList){
 			price -= (price * 0.20F);
 			handler.getPlayer().addGold(price);
 			handler.getPlayer().getInventory().removeItem(item);
+			//TODO: Add the item sold to Merchant to the Merchant's Buy List
 		}
 	}
 	

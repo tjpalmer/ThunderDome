@@ -80,10 +80,16 @@ public class Stats {
 				equip.put(slot, null);
 			}
 			levelExp = new int[MAX_LEVEL + 1];
-			for(int i = 0; i <= MAX_LEVEL; i++){
-				levelExp[i] = i * 500 + 5 * i/3 + i/9;
+			for(float i = 0; i <= MAX_LEVEL; i++){
+				float num = (float)Math.pow(i, 4) + 1;
+				levelExp[(int)i] = (int)((i * 500) + num*(i/2));
 			}
 			this.maxExperience = levelExp[level];
+			/*
+			for(int i = 1; i <= MAX_LEVEL; i++){
+				System.out.println(levelExp[i]);
+			}
+			*/
 		}
 	}
 	
@@ -246,16 +252,16 @@ public class Stats {
 	
 	public void unEquip(Equip slot){
 		switch(slot){
-			case MAINHAND: weapDmg -= mainH.getDmgAmt(); ((Player)entity).getInventory().addItems(mainH); mainH = null; break;
-			case OFFHAND: ((Player)entity).getInventory().addItems(offH); offH = null ;break;
-			case HEAD: armorRating -= head.getArmorAmt(); ((Player)entity).getInventory().addItems(head); head = null; break;
-			case CHEST: armorRating -= chest.getArmorAmt(); ((Player)entity).getInventory().addItems(chest); chest = null; break;
-			case LEGS: armorRating -= legs.getArmorAmt(); ((Player)entity).getInventory().addItems(legs); legs = null; break;
-			case FEET: armorRating -= feet.getArmorAmt(); ((Player)entity).getInventory().addItems(feet); feet = null; break;
-			case SHOULDERS: armorRating -= shoulders.getArmorAmt(); ((Player)entity).getInventory().addItems(shoulders); shoulders = null; break;
-			case HANDS: armorRating -= hands.getArmorAmt(); ((Player)entity).getInventory().addItems(hands); hands = null; break;
-			case ACCESS1: ((Player)entity).getInventory().addItems(acc1); acc1 = null; break;
-			case ACCESS2: ((Player)entity).getInventory().addItems(acc2); acc2 = null; break;
+			case MAINHAND: weapDmg -= mainH.getDmgAmt(); ((Player)entity).getInventory().addItems(mainH, false); mainH = null; break;
+			case OFFHAND: ((Player)entity).getInventory().addItems(offH, false); offH = null ;break;
+			case HEAD: armorRating -= head.getArmorAmt(); ((Player)entity).getInventory().addItems(head, false); head = null; break;
+			case CHEST: armorRating -= chest.getArmorAmt(); ((Player)entity).getInventory().addItems(chest, false); chest = null; break;
+			case LEGS: armorRating -= legs.getArmorAmt(); ((Player)entity).getInventory().addItems(legs, false); legs = null; break;
+			case FEET: armorRating -= feet.getArmorAmt(); ((Player)entity).getInventory().addItems(feet, false); feet = null; break;
+			case SHOULDERS: armorRating -= shoulders.getArmorAmt(); ((Player)entity).getInventory().addItems(shoulders, false); shoulders = null; break;
+			case HANDS: armorRating -= hands.getArmorAmt(); ((Player)entity).getInventory().addItems(hands, false); hands = null; break;
+			case ACCESS1: ((Player)entity).getInventory().addItems(acc1, false); acc1 = null; break;
+			case ACCESS2: ((Player)entity).getInventory().addItems(acc2, false); acc2 = null; break;
 		}
 		equip.replace(slot, null);
 	}
@@ -282,7 +288,7 @@ public class Stats {
 		if(level < 40){
 			if(entity.getId() == ID.Player){
 				entity = (Player)entity;
-				if(getMaxExperience(level) <= experience){
+				if(getMaxExperience() <= experience){
 					return true;
 				}
 			}
@@ -313,13 +319,16 @@ public class Stats {
 		experience += amount;
 		list.add(new BouncyText(entity.getHandler(), String.valueOf((int)amount), Color.MAGENTA, (int)(entity.getX() + entity.getWidth()/2), (int)(entity.getY())));
 		if(isLevelUp()){
-			experience = 0;
-			getMaxExperience(level);
+			getMaxExperience();
 			levelUp();
 		}
 	}
 	
-	public int getMaxExperience(int level){
+	public int getMaxExperience(){
+		return getLevelExperience(level);
+	}
+	
+	public int getLevelExperience(int level){
 		this.maxExperience = levelExp[level];
 		return maxExperience;
 	}

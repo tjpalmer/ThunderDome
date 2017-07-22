@@ -8,6 +8,7 @@ import java.util.Comparator;
 import virassan.entities.creatures.enemies.Enemy;
 import virassan.entities.creatures.npcs.Merchant;
 import virassan.entities.creatures.player.Player;
+import virassan.entities.statics.StaticEntity;
 import virassan.input.LinkedQueue;
 import virassan.main.Display;
 import virassan.main.Handler;
@@ -18,6 +19,7 @@ public class EntityManager {
 	private Handler handler;
 	private Player player;
 	private ArrayList<Entity> entities;
+	private ArrayList<StaticEntity> statics;
 	private boolean isPaused;
 	
 	private Comparator<Entity> renderSorter = new Comparator<Entity>(){
@@ -33,6 +35,7 @@ public class EntityManager {
 	public EntityManager(Handler handler){
 		this.handler = handler;
 		entities = new ArrayList<Entity>();
+		statics = new ArrayList<StaticEntity>();
 		isPaused = false;
 	}
 
@@ -75,6 +78,11 @@ public class EntityManager {
 			}
 		}
 		entities.sort(renderSorter);
+		for(StaticEntity e : statics){
+			if(!isPaused){
+				e.tick();
+			}
+		}
 	}
 	
 	public void render(Graphics g){
@@ -82,6 +90,11 @@ public class EntityManager {
 		int xEnd = (int)(Display.WIDTH + handler.getGameCamera().getxOffset()) + 60;
 		int yStart = (int)handler.getGameCamera().getyOffset() - 60;
 		int yEnd = (int)(handler.getGameCamera().getyOffset() + Display.HEIGHT) + 60;
+		for(StaticEntity e : statics){
+			if(e.getX() >= xStart-e.getWidth() && e.getX() <= xEnd && e.getY() >= yStart-e.getHeight() && e.getY() <= yEnd){
+				e.render(g);
+			}
+		}
 		for(Entity e : entities){
 			if(e.getX() >= xStart-e.getWidth() && e.getX() <= xEnd && e.getY() >= yStart-e.getHeight() && e.getY() <= yEnd){
 				e.render(g);
@@ -91,6 +104,10 @@ public class EntityManager {
 
 	public void addEntity(Entity e){
 		entities.add(e);
+	}
+	
+	public void addStatic(StaticEntity e){
+		statics.add(e);
 	}
 	
 	//Getters and Setters
@@ -108,6 +125,11 @@ public class EntityManager {
 	}
 
 	public void setPlayer(Player player) {
+		for(Entity e : entities){
+			if(e instanceof Player){
+				e.isDead(true);
+			}
+		}
 		this.player = player;
 		addEntity(player);
 	}

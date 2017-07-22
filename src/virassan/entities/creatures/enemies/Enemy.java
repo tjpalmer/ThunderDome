@@ -137,6 +137,10 @@ public abstract class Enemy extends Creature{
 				int yran = new Random().nextInt(32);
 				drops[i].setPos(new Vector2F(x + xran, y + yran));
 				handler.getItemManager().addItem(drops[i]);
+			}else{
+				if(type == EnemyType.BOSS){
+					//System.out.println("Item: " + drops[i].getItem() + " chance: " + drops[i].getChance());
+				}
 			}
 		}
 	}

@@ -20,18 +20,17 @@ public class Vector2F {
 		this.yPos = ypos;	
 	}
 	
-	public static Vector2F zero(){
-		return new Vector2F();
+	/**
+	 * Zeroes the Position
+	 */
+	public void zero(){
+		xPos = 0.0F;
+		yPos = 0.0F;
 	}
 	
-	public Vector2F getScreenLocation(){
-		return new Vector2F(xPos, yPos);
-	}
-	
-	public Vector2F getWorldLocation(){
-		return new Vector2F(xPos - worldXpos, yPos - worldYpos);
-	}
-	
+	/**
+	 * Used to get the direction of the Vector2F
+	 */
 	public void normalize(){
 		double length = Math.sqrt(xPos * xPos + yPos * yPos);
 		if(length != 0.0){
@@ -41,28 +40,47 @@ public class Vector2F {
 		}
 	}
 	
+	/**
+	 * Compares this Vector2F with the Vector2F passed
+	 * @param vector The Vector2F to compare with this one.
+	 * @return Returns true if they are the same, false if not.
+	 */
 	public boolean equals(Vector2F vector){
 		return (this.xPos == vector.xPos && this.yPos == vector.yPos);
 	}
 	
+	/**
+	 * Copies the Position of the Vector2F passed to this Vector2F
+	 * @param vector The Vector2F to be copied
+	 * @return Returns this Vector2F
+	 */
 	public Vector2F copyToThis(Vector2F vector){
 		this.xPos = vector.xPos;
 		this.yPos = vector.yPos;
 		return this;
 	}
 	
-	public Vector2F copyNew(Vector2F vector){
-		float xpos = vector.xPos;
-		float ypos = vector.yPos;
-		return new Vector2F(xpos, ypos);
+	/**
+	 * Used for creating a new Vector2F using this vector's Position
+	 * @return Returns a new Vector2F identical to this one.
+	 */
+	public Vector2F copy(){
+		return new Vector2F(xPos, yPos);
 	}
 	
+	/**
+	 * Adds the Position of this Vector2F to the Vector2F passed.
+	 * @param vector
+	 * @return
+	 */
 	public Vector2F add(Vector2F vector){
 		xPos = xPos + vector.xPos;
 		yPos = yPos + vector.yPos;
 		return new Vector2F(xPos, yPos);
 	}
 	
+	
+	//WORLD POSITION STUFF
 	public static void setWorldPositions(float worldx, float worldy){
 		worldXpos = worldx;
 		worldYpos = worldy;
@@ -72,6 +90,10 @@ public class Vector2F {
 		float v1 = vec1.xPos - vec2.xPos;
 		float v2 = vec1.yPos - vec2.yPos;
 		return Math.sqrt(v1 * v1 + v2 * v2);
+	}
+	
+	public Vector2F getWorldLocation(){
+		return new Vector2F(xPos - worldXpos, yPos - worldYpos);
 	}
 	
 	public double getDistanceBetweenWorldVectors(Vector2F vec){

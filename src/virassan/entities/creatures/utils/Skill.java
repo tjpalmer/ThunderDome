@@ -10,8 +10,8 @@ public enum Skill{
 	
 	HEAL_1("Heal", "restore", ID.Player, "health", 4, 0, "mana", 25, 20, Assets.heal_icon),
 	CHOP("Chop", "dmg", ID.Enemy, "basic", 4, 200, "stam", 25, 60, Assets.chop_icon),
-	STAB("Stab", "dmg", ID.Enemy, "basic", 2, 200, "stam", 5, 25, Assets.stab_icon),
-	SLASH("Slash", "dmg", ID.Enemy, "basic", 5, 400, "stam", 15, 50, Assets.slash_icon);
+	STAB("Stab", "dmg", ID.Enemy, "basic", 2, 100, "stam", 5, 25, Assets.stab_icon),
+	SLASH("Slash", "dmg", ID.Enemy, "basic", 5, 300, "stam", 15, 50, Assets.slash_icon);
 	
 	
 	private int range;
