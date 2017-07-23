@@ -28,7 +28,7 @@ public class MenuMap {
 		
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		drag();
 		if(!mouseInput.getLeftClicks().isEmpty()){
 			leftClick();
@@ -37,8 +37,8 @@ public class MenuMap {
 			rightClick();
 		}
 		hover();
-		HUDManager.MENUTIMER += System.currentTimeMillis() - HUDManager.MENULAST;
-		HUDManager.MENULAST = System.currentTimeMillis();
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
+		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
 	}
 	
 	public void leftClick(){

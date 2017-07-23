@@ -26,8 +26,9 @@ public class KeyInput implements KeyListener{
 	
 	/**
 	 * Ticks whether these keys are pressed/typed/etc
+	 * @param delta 
 	 */
-	public void tick(){
+	public void tick(double delta){
 		one = keys[KeyEvent.VK_1];
 		two = keys[KeyEvent.VK_2];
 		three = keys[KeyEvent.VK_3];

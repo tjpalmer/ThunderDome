@@ -130,16 +130,16 @@ public class Player extends Creature{
 	/**
 	 * Ticks the Player - checking KeyInput, animation, movement, and GameCamera
 	 */
-	public void tick() {
+	public void tick(double delta) {
 		isPaused = handler.getEntityManager().getPaused();
-		getInput();
+		getInput(delta);
 		if(!isPaused){
 			for(SkillTracker s : skillList){
-				s.tick();
+				s.tick(delta);
 			}
 			
-			move();
-			animation.tick();
+			move(delta);
+			animation.tick(delta);
 			y = Utils.clamp((int)y, 0, Handler.WORLD.getMap().getHeight() * Tile.TILE_HEIGHT - height);
 			x = Utils.clamp((int)x, 0, Handler.WORLD.getMap().getWidth() * Tile.TILE_WIDTH - width);
 			handler.getGameCamera().centerOnEntity(this);
@@ -158,31 +158,31 @@ public class Player extends Creature{
 	/**
 	 * Checks player Input via Keyboard and adjusts movement and animation
 	 */
-	private void getInput(){
+	private void getInput(double delta){
 		if(!isPaused){
 			// Movement
-			movement(keyInput.W, keyInput.S, keyInput.A, keyInput.D);
+			movement(delta, keyInput.W, keyInput.S, keyInput.A, keyInput.D);
 			
 			// Special Commands
 			if(keyInput.E){
-				timerTwo += System.currentTimeMillis() - otherTime;
-				otherTime = System.currentTimeMillis();
+				timerTwo += (System.currentTimeMillis() - otherTime) * delta;
+				otherTime = System.currentTimeMillis() * (long)delta;
 				if(timerTwo > 100){
 					stats.heal(5);
 					timerTwo = 0;
 				}
 			}
 			else if(keyInput.Q){
-				timer += System.currentTimeMillis() - lastTime;
-				lastTime = System.currentTimeMillis();
+				timer += (System.currentTimeMillis() - lastTime) * delta;
+				lastTime = System.currentTimeMillis() * (long)delta;
 				if(timer > 100){
 					stats.damage(2);
 					timer = 0;
 				}
 			}
 			else if(keyInput.R){
-				timerTwo += System.currentTimeMillis() - otherTime;
-				otherTime = System.currentTimeMillis();
+				timerTwo += (System.currentTimeMillis() - otherTime) * delta;
+				otherTime = System.currentTimeMillis() * (long)delta;
 				if(timerTwo > 100){
 					stats.addExperience(100);
 					timerTwo = 0;
@@ -210,7 +210,7 @@ public class Player extends Creature{
 	 * If an arrow key is pressed, changes Player velocity
 	 * @param b if any arrow key is pressed
 	 */
-	private void movement(boolean up, boolean down, boolean left, boolean right){
+	private void movement(double delta, boolean up, boolean down, boolean left, boolean right){
 		//TODO: Cap it when pressing up/down and left/right
 		float xmin = 0;
 		float ymin = 0;
@@ -242,8 +242,8 @@ public class Player extends Creature{
 		animation.setTimeShared(true);
 		if(!up && !down && !right && !left)
 			animation.setAnimationLoop(false);
-		velY = Utils.clamp(velY, ymin, ymin + speed);
-		velX = Utils.clamp(velX, xmin, xmin + speed);
+		velY = Utils.clamp((float)(velY*delta), ymin, ymin + speed);
+		velX = Utils.clamp((float)(velX*delta), xmin, xmin + speed);
 	}
 	
 	/**

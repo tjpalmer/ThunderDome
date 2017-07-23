@@ -39,19 +39,19 @@ public class EntityManager {
 		isPaused = false;
 	}
 
-	public void tick(){
+	public void tick(double delta){
 		for(int i = 0; i < entities.size(); i++){
 			if(!entities.get(i).isDead()){
 				if(!(entities.get(i) instanceof Player)){
 					if(!isPaused){
-						entities.get(i).tick();
+						entities.get(i).tick(delta);
 					}else{
 						if(entities.get(i) instanceof Merchant){
-							entities.get(i).tick();
+							entities.get(i).tick(delta);
 						}
 					}
 				}else{
-					entities.get(i).tick();
+					entities.get(i).tick(delta);
 				}
 			}else{
 				if(entities.get(i) instanceof Enemy){
@@ -80,7 +80,7 @@ public class EntityManager {
 		entities.sort(renderSorter);
 		for(StaticEntity e : statics){
 			if(!isPaused){
-				e.tick();
+				e.tick(delta);
 			}
 		}
 	}

@@ -41,9 +41,10 @@ public class EventText {
 		}
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		if(lifeSpan > 0){
-			lifeSpan -= 0.01F;
+			//FIXME: Just testing the delta w/ lifeSpan
+			lifeSpan -= 0.01F*delta;
 			opacity = Utils.clamp(opacity - 5, 0, 255);
 		}else{
 			live = false;

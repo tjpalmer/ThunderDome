@@ -3,13 +3,18 @@ package virassan.world.maps;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
+import java.util.Set;
 
 import org.json.simple.*;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import virassan.entities.Entity;
 import virassan.entities.EntityManager;
@@ -63,8 +68,8 @@ public class Map{
 		entityManager.render(g);
 	}
 
-	public void tick(){
-		entityManager.tick();
+	public void tick(double delta){
+		entityManager.tick(delta);
 	}
 	
 	/**
@@ -263,43 +268,112 @@ public class Map{
 	 * @param filepath Filepath of the NPC JSON file.
 	 */
 	public void loadNPCs(String filepath){
+		
+		HashMap<Item, Integer> buyItems = new HashMap<>();
+		String name = "DEFAULT";
+		String image = "";
+		String type = "";
+		long x = 0;
+		long y = 0;
+		long width = 0;
+		long height = 0;
+		ArrayList<Quest> quests = new ArrayList<>();
+		
+		JSONParser parser = new JSONParser();
 		try{
-			JSONObject jObj = (JSONObject)JSONValue.parse(new FileReader(filepath));
-			JSONArray arrays = (JSONArray)jObj.get("NPCs");
+			JSONObject obj = (JSONObject)parser.parse(new FileReader(filepath));
+			JSONArray arrays = (JSONArray)obj.get("NPCs");
 			for(int i = 0; i < arrays.size(); i++){
-				JSONObject npcObj = (JSONObject)arrays.get(i);
-				String name = (String)npcObj.get("name");
-				String type = (String)npcObj.get("type");
-				long x = (Long)npcObj.get("x");
-				long y = (Long)npcObj.get("y");
-				long width = (Long)npcObj.get("width");
-				long height = (Long)npcObj.get("height");
-				String image = (String)npcObj.get("image");
-				switch(type){
-				case "Merchant":
-					JSONArray items = (JSONArray)npcObj.get("items");
-					HashMap<Item, Integer> buyList = new HashMap<>();
-					for(Object item : items){
-						String i_name = (String)((JSONObject)item).get("item");
-						int stack = (int)(long)(Long)((JSONObject)item).get("stack");
-						buyList.put(Item.valueOf(i_name), stack);
-					}
-					entityManager.addEntity(new Merchant(handler, name, (float)x, (float)y, (int)width, (int)height, image, buyList));
-					break;
-				case "NPC":
-					JSONArray quests = (JSONArray)npcObj.get("quests");
-					ArrayList<Quest> questList = new ArrayList<>();
-					for(Object q : quests){
-						String q_name = (String)((JSONObject)q).get("ID");
-						questList.add(Quest.valueOf(q_name));
-					}
-					entityManager.addEntity(new NPC(handler, (float)x, (float)y, (int)width, (int)height, name, image, questList));
-					break;
-				}
-			}
-		}catch(IOException e){
+				JSONObject jsonObject = (JSONObject) arrays.get(i);
+			
+				Set keys = jsonObject.keySet();
+			    Iterator a = keys.iterator();
+			    while(a.hasNext()) {
+			    	String key = (String)a.next();
+			        // loop to get the dynamic key
+			    	Object value = jsonObject.get(key);
+			    	if(jsonObject.get(key) instanceof String){
+			    		switch(key){
+			    		case "name":
+			    			name = (String)value;
+			    			break;
+			    		case "image":
+			    			image = (String)value;
+			    			break;
+			    		case "type":
+			    			type = (String)value;
+			    			break;
+			    		}
+			    	}else if(jsonObject.get(key) instanceof JSONArray){
+			    		value = (JSONArray)jsonObject.get(key);
+			    		switch(key){
+			    		case "quests":
+			    			for(Object o : (JSONArray)jsonObject.get(key)){
+			    				JSONObject arrayObject = (JSONObject)o;
+			    				try{
+			    				quests.add(Quest.valueOf((String)arrayObject.get("ID")));
+			    				}catch(IllegalArgumentException e){
+			    					System.out.println("NPC Quest adder - ID " + (String)arrayObject.get("ID") + " Quest not found.");
+			    				}
+			    			}
+			    			break;
+			    		case "items":
+			    			for(Object o : (JSONArray)jsonObject.get(key)){
+			    				JSONObject arrayObject = (JSONObject)o;
+			    				try{
+			    					Item temp = Item.valueOf((String)arrayObject.get("item"));
+			    					long stack = (long)arrayObject.get("stack");
+			    					buyItems.put(temp, (int)stack);
+			    				}catch(IllegalArgumentException e){
+			    					System.out.println("Merchant NPC BuyList adder - item " + (String)arrayObject.get("item") + " not found.");
+			    				}
+			    			}
+			    			break;
+			    		}
+			    	}else if(jsonObject.get(key) instanceof Long){
+			    		switch(key){
+			    		case "x":
+			    			x = (long)jsonObject.get(key);
+			    			break;
+			    		case "y":
+			    			y = (long)jsonObject.get(key);
+			    			break;
+			    		case "width":
+			    			width = (long)jsonObject.get(key);
+			    			break;
+			    		case "height":
+			    			height = (long)jsonObject.get(key);
+			    			break;
+			    		}
+			    	}
+			    }
+		    }
+		}catch (FileNotFoundException e){
+			e.printStackTrace();
+		}catch (IOException e){
 			e.printStackTrace();
 			System.out.println("Cannot find NPC json file for this map at path: " + filepath);
+		}catch (ParseException e){
+			e.printStackTrace();
+		}
+		//TODO: TEST THIS
+		switch(type.toUpperCase()){
+		case "NPC":
+			try{
+				entityManager.addEntity(new NPC(handler, (float)x, (float)y, (int)width, (int)height, name, image, quests));
+			}catch(NullPointerException e){
+				e.printStackTrace();
+				System.out.println("When creating NPC entity, one or more values is NULL. ");
+			}
+			break;
+		case "MERCHANT":
+			try{
+				entityManager.addEntity(new Merchant(handler, name, (float)x, (float)y, (int)width, (int)height, image, buyItems));
+			}catch(NullPointerException e){
+				e.printStackTrace();
+				System.out.println("When creating MERCHANT entity, one or more values is NULL. ");
+			}
+			break;
 		}
 	}
 	

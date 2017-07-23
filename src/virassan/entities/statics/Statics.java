@@ -118,9 +118,9 @@ public class Statics extends StaticEntity{
 		System.out.println(eventBounds.x + ", " + eventBounds.y + " - " + eventBounds.width + " X " + eventBounds.height);
 	}
 	
-	public void tick() {
+	public void tick(double delta) {
 		if(animated){
-			anime.tick();
+			anime.tick(delta);
 		}
 		switch(idname){
 		case "warp_portal": eventCollision(); break;

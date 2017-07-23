@@ -97,8 +97,9 @@ public class Handler {
 	
 	/**
 	 * Ticks the World
+	 * @param delta 
 	 */
-	public void tick()
+	public void tick(double delta)
 	{
 		/*
 		isNaming = false;
@@ -110,46 +111,46 @@ public class Handler {
 		*/
 		switch(curState){
 		case LaunchLoad:
-			LAUNCHLOAD.tick();
+			LAUNCHLOAD.tick(delta);
 			break;
 		case LaunchMenu:
-			LAUNCHMENU.tick();
+			LAUNCHMENU.tick(delta);
 			break;
 		case LaunchNew:
-			LAUNCHNEW.tick();
+			LAUNCHNEW.tick(delta);
 			break;
 		case MenuCharacter:
-			MENUCHAR.tick();
+			MENUCHAR.tick(delta);
 			break;
 		case MenuInventory:
-			MENUINV.tick();
+			MENUINV.tick(delta);
 			break;
 		case MenuLevelUp:
-			MENULVL.tick();
+			MENULVL.tick(delta);
 			break;
 		case MenuMap:
-			MENUMAP.tick();
+			MENUMAP.tick(delta);
 			break;
 		case MenuQuest:
-			MENUQUEST.tick();
+			MENUQUEST.tick(delta);
 			break;
 		case MenuSettings:
-			MENUSET.tick();
+			MENUSET.tick(delta);
 			break;
 		case MenuSkills:
-			MENUSKILLS.tick();
+			MENUSKILLS.tick(delta);
 			break;
 		case NPCDialog:
-			NPCDIALOG.tick();
+			NPCDIALOG.tick(delta);
 			break;
 		case NPCShop:
-			NPCSHOP.tick();
+			NPCSHOP.tick(delta);
 			break;
 		case World:
-			WORLD.tick();
+			WORLD.tick(delta);
 			break;
 		default:
-			LAUNCHMENU.tick();
+			LAUNCHMENU.tick(delta);
 			break;
 		}
 	}

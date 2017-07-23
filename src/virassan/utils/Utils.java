@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -39,26 +40,6 @@ import virassan.world.World;
  *
  */
 public class Utils {
-
-
-	//TODO: Figure out why this unused function is here
-	/*
-	public static String loadFileAsString(String path){
-		StringBuilder builder = new StringBuilder();
-		
-		try{
-			BufferedReader br = new BufferedReader(new FileReader(path));
-			String line;
-			while((line = br.readLine()) != null)
-				builder.append(line+ "\n");
-			br.close();
-		}catch(IOException e){
-			e.printStackTrace();
-			//TODO: error message
-		}
-		return builder.toString();
-	}
-	*/
 	
 	/**
 	 * Converts String to an int
@@ -568,39 +549,5 @@ public class Utils {
 		}
 		
 		
-	}
-	
-	/**
-	 * Reads the JSON file containing NPC info and creates the NPC
-	 * @param filepath the npc JSON file
-	 */
-	public static void npcReader(String filepath){
-		JSONParser parser = new JSONParser();
-		try{
-			Object obj = parser.parse(new FileReader(filepath));
-			JSONObject jsonObject = (JSONObject) obj;
-			String name = (String) jsonObject.get("name");
-			long level = (Long) jsonObject.get("level");
-			JSONArray msg = (JSONArray) jsonObject.get("greetings");
-			Iterator<String> iterator = msg.iterator();
-			String[] greetings = new String[1];
-			int count = 0;
-			while (iterator.hasNext()){
-				if(count >= greetings.length){
-					String[] temp = new String[greetings.length+1];
-					System.arraycopy(greetings, 0, temp, 0, greetings.length);
-					greetings = temp;
-				}
-				greetings[count] = iterator.next();
-				count++;
-			}	
-		}catch (FileNotFoundException e){
-			e.printStackTrace();
-		}catch (IOException e){
-			e.printStackTrace();
-		}catch (ParseException e){
-			e.printStackTrace();
-		}
-		//TODO: Create new NPC object with above values
 	}
 }

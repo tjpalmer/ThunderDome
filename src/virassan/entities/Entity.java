@@ -70,7 +70,7 @@ public abstract class Entity {
 		return false;
 	}
 
-	public abstract void tick();
+	public abstract void tick(double delta);
 	public abstract void render(Graphics g);
 	public abstract void unPause();
 	

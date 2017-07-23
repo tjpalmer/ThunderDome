@@ -86,15 +86,15 @@ public class Soldier extends Enemy{
 	}
 	
 	@Override
-	public void tick() {
-		move();
+	public void tick(double delta) {
+		move(delta);
 		if(isMoving){
 			animation.setAnimationLoop(true);
 		}else{
 			animation.setAnimationLoop(false);
 		}
-		animation.tick();
-		stats.tick();
+		animation.tick(delta);
+		stats.tick(delta);
 	}
 
 	@Override

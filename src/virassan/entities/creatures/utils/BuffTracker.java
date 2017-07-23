@@ -42,11 +42,11 @@ public class BuffTracker {
 		this.buff = buff;
 	}
 
-	public void tick(){
+	public void tick(double delta){
 		// 1 second = 1,000 milliseconds
 		if(isLive){
-			timerSec += System.currentTimeMillis() - lastSec;
-			lastSec = System.currentTimeMillis();
+			timerSec += (System.currentTimeMillis() - lastSec) * delta;
+			lastSec = System.currentTimeMillis() * (long)delta;
 			if(timerSec >= 1000){
 				if(type.equals("buff")){
 					switch(effect){

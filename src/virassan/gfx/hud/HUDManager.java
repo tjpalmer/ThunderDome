@@ -50,7 +50,7 @@ public class HUDManager {
 	}
 
 	
-	public void tick(){
+	public void tick(double delta){
 		player = handler.getPlayer();
 		boolean pause = handler.getEntityManager().getPaused();
 		if(!pause){
@@ -79,7 +79,7 @@ public class HUDManager {
 				skillList.remove(text);
 			}
 		}
-		player.getStats().tick();
+		player.getStats().tick(delta);
 		
 	}
 	

@@ -116,7 +116,7 @@ public class NPC extends Creature{
 	}
 	
 	@Override
-	public void tick() {
+	public void tick(double delta) {
 		//TODO: Add animation and possible movement to NPC when Not Paused
 	}
 

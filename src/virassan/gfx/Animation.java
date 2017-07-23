@@ -68,13 +68,14 @@ public class Animation {
 	
 	/**
 	 * Ticks the animation - figures out which frame it's on depending on the animation speed and if set to keep looping or not
+	 * @param delta 
 	 */
-	public void tick(){
+	public void tick(double delta){
 		if(!stopped){
-			timer += System.currentTimeMillis() - lastTime;
-			lastTime = System.currentTimeMillis();
+			timer += (System.currentTimeMillis() - lastTime) * delta;
+			lastTime = System.currentTimeMillis() * (long)delta;
 			if(timeShared){
-				timer += System.currentTimeMillis() - sharedLastTime;
+				timer += (System.currentTimeMillis() - sharedLastTime) * delta;
 			}
 			if(timer > speed){
 				index--;

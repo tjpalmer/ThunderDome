@@ -94,11 +94,11 @@ public class Stats {
 	}
 	
 	
-	public void tick(){
+	public void tick(double delta){
 		if(!entity.getHandler().getEntityManager().getPaused()){
 			for(BuffTracker buff : buffs){
 				if(buff.getLive()){
-					buff.tick();
+					buff.tick(delta);
 				}else{
 					buffs.remove(buff);
 				}
@@ -106,21 +106,21 @@ public class Stats {
 		}
 		for(EventText text : eventList){
 			if(text.isLive()){
-				text.tick();
+				text.tick(delta);
 			}else{
 				eventList.remove(text);
 			}
 		}
 		for(BouncyText text : list){
 			if(text.getLive()){
-				text.tick();
+				text.tick(delta);
 			}else{
 				list.remove(text);
 			}
 		}
 		if(!entity.getHandler().getEntityManager().getPaused()){
-			damageTimer += System.currentTimeMillis() - damageLast;
-			damageLast = System.currentTimeMillis();
+			damageTimer += (System.currentTimeMillis() - damageLast) * delta;
+			damageLast = System.currentTimeMillis() * (long)delta;
 			if(isDamaged){
 				if(damageTimer > damageWait){
 					damageTimer = 0;
@@ -129,8 +129,8 @@ public class Stats {
 			}else{
 				if(aggro){
 					if(entity instanceof Enemy){
-						aggroTimer += System.currentTimeMillis() - aggroLast;
-						aggroLast = System.currentTimeMillis();
+						aggroTimer += (System.currentTimeMillis() - aggroLast) * delta;
+						aggroLast = System.currentTimeMillis() * (long)delta;
 						if(aggroTimer > 1400){
 							int playerDist = (int)Math.sqrt((double)(Math.pow(entity.getX() - entity.getHandler().getPlayer().getX(), 2) + Math.pow(entity.getY() - entity.getHandler().getPlayer().getY(), 2)));
 							if(playerDist > ((Enemy)entity).getAggroDist()){
@@ -140,8 +140,8 @@ public class Stats {
 						}
 					}
 				}else{
-					healTimer += System.currentTimeMillis() - healLast;
-					healLast = System.currentTimeMillis();
+					healTimer += (System.currentTimeMillis() - healLast) * delta;
+					healLast = System.currentTimeMillis() * (long)delta;
 					if(healTimer > 800){
 						if(health < maxHealth){
 							health = Utils.clamp(health + healRate, 0, maxHealth);

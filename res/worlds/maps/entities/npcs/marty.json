@@ -1,0 +1,14 @@
+{"image":"blob_spritesheet_blue",
+
+"quests":[
+	
+	{"ID":"QUEST_1"},
+	
+	{"ID":"QUEST_2"}],
+
+"name":"Marty",
+"x":17,
+"width":64,
+"y":14,
+"type":"NPC",
+"height":64}

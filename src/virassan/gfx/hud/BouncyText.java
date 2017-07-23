@@ -41,9 +41,9 @@ public class BouncyText {
 	}
 	
 	
-	public void tick(){
+	public void tick(double delta){
 		if(lifeTime > 0){
-			lifeTime -= 0.01f;
+			lifeTime -= 0.01f*delta;
 		}
 		if(lifeTime <= 0){
 			live = false;

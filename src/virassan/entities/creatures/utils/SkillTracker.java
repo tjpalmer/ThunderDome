@@ -30,9 +30,9 @@ public class SkillTracker {
 		skillCount = skillType.getCooldown();
 	}
 	
-	public void tick(){
-		skillTimer += System.currentTimeMillis() - skillLast;
-		skillLast = System.currentTimeMillis();
+	public void tick(double delta){
+		skillTimer += (System.currentTimeMillis() - skillLast) *delta;
+		skillLast = System.currentTimeMillis() * (long)delta;
 		if(skillTimer >= 1000){
 			skillCount++;
 			skillTimer = 0;

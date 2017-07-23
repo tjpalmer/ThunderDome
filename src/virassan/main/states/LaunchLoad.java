@@ -14,7 +14,7 @@ public class LaunchLoad {
 		
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		
 	}
 	

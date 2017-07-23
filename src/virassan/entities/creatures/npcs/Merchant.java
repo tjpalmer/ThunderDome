@@ -70,7 +70,7 @@ public class Merchant extends Creature{
 	}
 
 	@Override
-	public void tick() {
+	public void tick(double delta) {
 		if(!handler.getEntityManager().getPaused()){
 			// TODO: update the animation/image
 		}else{

@@ -120,7 +120,7 @@ public class NPCShop {
 		g.fillRect(mercCurX, mercCurY, 800 - 15, mercSelHeight);
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		player = handler.getPlayer();
 		inv = player.getInventory();
 		Merchant curMerc = player.getCurrentMerchant();
@@ -138,8 +138,8 @@ public class NPCShop {
 		if(curIndex >  itemIndex && curIndex != 0){
 			mercCurY = mercY[itemIndex];
 		}
-		HUDManager.MENUTIMER += System.currentTimeMillis() - HUDManager.MENULAST;
-		HUDManager.MENULAST = System.currentTimeMillis();
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
+		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
 		if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){
 			if(keyInput.F){
 				HUDManager.MENUTIMER = 0;

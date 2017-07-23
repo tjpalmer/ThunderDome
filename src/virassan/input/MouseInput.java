@@ -28,9 +28,9 @@ public class MouseInput implements MouseListener, MouseMotionListener{
 		doubleClicks = new LinkedQueue();
 	}
 	
-	public void tick(){
-		doubleTimer += System.currentTimeMillis() - doubleLast;
-		doubleLast = System.currentTimeMillis();
+	public void tick(double delta){
+		doubleTimer += (System.currentTimeMillis() - doubleLast) * delta;
+		doubleLast = System.currentTimeMillis() * (long)delta;
 	}
 	
 	public void render(Graphics g){

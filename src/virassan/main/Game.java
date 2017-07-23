@@ -70,10 +70,10 @@ public class Game implements Runnable{
 	/**
 	 * updates the game stuff
 	 */
-	public void tick(){
-		keyManager.tick();
-		mouseManager.tick();
-		handler.tick();
+	public void tick(double delta){
+		keyManager.tick(delta);
+		mouseManager.tick(delta);
+		handler.tick(delta);
 	}
 	
 	/**
@@ -117,12 +117,11 @@ public class Game implements Runnable{
 			lastTime = now;
 			
 			if(delta >= 1){
-				tick();
-				render();
+				tick(delta);
 				ticks++;
 				delta --;
 			}
-			
+			render();
 			if(timer >= 1000000000){
 				TICK = ticks;
 				ticks = 0;

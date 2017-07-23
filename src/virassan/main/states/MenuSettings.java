@@ -88,15 +88,15 @@ public class MenuSettings {
 		helpScroll.render(g);
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		if(!mouseInput.getLeftClicks().isEmpty()){
 			leftClick();
 		}
 		if(!mouseInput.getRightClicks().isEmpty()){
 			rightClick();
 		}
-		HUDManager.MENUTIMER += System.currentTimeMillis() - HUDManager.MENULAST;
-		HUDManager.MENULAST = System.currentTimeMillis();
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
+		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
 		if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){
 			if(keyInput.esc || keyInput.I || keyInput.L || keyInput.K){
 				HUDManager.MENUTIMER = 0;

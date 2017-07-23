@@ -53,7 +53,7 @@ public class MenuSkills {
 	}
 	
 	
-	public void tick(){
+	public void tick(double delta){
 		player = handler.getPlayer();
 		drag();
 		if(!mouseInput.getLeftClicks().isEmpty()){
@@ -63,8 +63,8 @@ public class MenuSkills {
 			rightClick();
 		}
 		hover();
-		HUDManager.MENUTIMER += System.currentTimeMillis() - HUDManager.MENULAST;
-		HUDManager.MENULAST = System.currentTimeMillis();
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
+		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
 		if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){
 			if(keyInput.K || keyInput.I || keyInput.L || keyInput.esc){
 				HUDManager.MENUTIMER = 0;

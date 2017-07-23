@@ -246,7 +246,7 @@ public class MenuInventory {
 		g.drawString(questlog, 950, 50);
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		player = handler.getPlayer();
 		inv = player.getInventory();
 		drag();
@@ -257,8 +257,8 @@ public class MenuInventory {
 			rightClick();
 		}
 		hover();
-		HUDManager.MENUTIMER += System.currentTimeMillis() - HUDManager.MENULAST;
-		HUDManager.MENULAST = System.currentTimeMillis();
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
+		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
 		if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){
 			if(keyInput.esc || keyInput.I || keyInput.L || keyInput.K){
 				displayItemInfo = false;

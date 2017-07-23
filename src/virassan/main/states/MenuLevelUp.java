@@ -66,7 +66,7 @@ public class MenuLevelUp {
 		}
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		traitAmounts = new int[]{handler.getPlayer().getTraits().getStrength(), handler.getPlayer().getTraits().getResilience(), handler.getPlayer().getTraits().getDexterity(), handler.getPlayer().getTraits().getIntelligence(), handler.getPlayer().getTraits().getCharisma()};
 		if(!mouseInput.getLeftClicks().isEmpty()){
 			leftClick();
@@ -74,8 +74,8 @@ public class MenuLevelUp {
 		if(!mouseInput.getRightClicks().isEmpty()){
 			rightClick();
 		}
-		HUDManager.MENUTIMER += System.currentTimeMillis() - HUDManager.MENULAST;
-		HUDManager.MENULAST = System.currentTimeMillis();
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
+		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
 		if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){
 			if(keyInput.T){
 				handler.setState(States.World);

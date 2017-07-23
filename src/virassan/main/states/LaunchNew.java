@@ -14,7 +14,7 @@ public class LaunchNew {
 		
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		
 	}
 	

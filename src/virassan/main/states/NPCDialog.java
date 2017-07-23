@@ -57,7 +57,7 @@ public class NPCDialog {
 		}
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		player = handler.getPlayer();
 		if(!mouseInput.getLeftClicks().isEmpty()){
 			leftClick();
@@ -66,8 +66,8 @@ public class NPCDialog {
 			rightClick();
 		}
 		hover();
-		HUDManager.MENUTIMER += System.currentTimeMillis() - HUDManager.MENULAST;
-		HUDManager.MENULAST = System.currentTimeMillis();
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
+		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
 		NPC curNPC = player.getCurrentNPC();
 		if(!isQuestMenu){
 			if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){

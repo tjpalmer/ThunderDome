@@ -46,7 +46,7 @@ public abstract class Enemy extends Creature{
 		lastTime = System.currentTimeMillis();
 	}
 	
-	public void move(){
+	public void move(double delta){
 		isMoving = false;
 		timer += System.currentTimeMillis() - lastTime;
 		lastTime = System.currentTimeMillis();
@@ -119,7 +119,7 @@ public abstract class Enemy extends Creature{
 				}
 			}
 		}
-		super.move();
+		super.move(delta);
 	}
 	
 	public EnemyType getEnemyType(){

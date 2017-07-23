@@ -29,7 +29,7 @@ public class MenuCharacter {
 	}
 	
 	
-	public void tick(){
+	public void tick(double delta){
 		player = handler.getPlayer();
 		drag();
 		if(!mouseInput.getLeftClicks().isEmpty()){
@@ -39,8 +39,8 @@ public class MenuCharacter {
 			rightClick();
 		}
 		hover();
-		HUDManager.MENUTIMER += System.currentTimeMillis() - HUDManager.MENULAST;
-		HUDManager.MENULAST = System.currentTimeMillis();
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
+		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
 	}
 	
 	public void leftClick(){

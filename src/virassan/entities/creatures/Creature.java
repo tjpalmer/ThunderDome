@@ -63,30 +63,30 @@ public abstract class Creature extends Entity{
 	}
 
 	
-	public void move(){
+	public void move(double delta){
 		if(!isDead()){
 			if(!checkEntityCollisions(velX, 0f)){
-				moveX();
+				moveX(delta);
 			}
 			if(!checkEntityCollisions(0f, velY)){
-				moveY();
+				moveY(delta);
 			}
 		}
 	}
 	
-	public void moveX(){
+	public void moveX(double delta){
 		if(velX > 0){ //moving right
 			int tempX = (int)(x + velX + bounds.x + bounds.width)/ Tile.TILE_WIDTH;
 			if(!collisionWithTile(tempX, (int)(y + bounds.y)/ Tile.TILE_HEIGHT) && 
 					!collisionWithTile(tempX, (int)(y + bounds.y + bounds.height)/ Tile.TILE_HEIGHT)){
 				if(npc){
 					if(Utils.clamp(x + velX, walkBounds.x, walkBounds.x + walkBounds.width) == x + velX){
-						x = Utils.clamp(velX+x, 0, Handler.WORLD.getMap().getWidth()*64);
+						x = Utils.clamp((float)(velX+x*delta), 0, Handler.WORLD.getMap().getWidth()*64);
 					}else{
 						setisMoving(false);
 					}
 				}else{
-					x += velX;
+					x += velX*delta;
 				}
 			}else{
 				x = (tempX * Tile.TILE_WIDTH - bounds.x - bounds.width -1);
@@ -108,12 +108,12 @@ public abstract class Creature extends Entity{
 			if(!collisionWithTile(tempX, (int)(y + bounds.y)/ Tile.TILE_HEIGHT) && !collisionWithTile(tempX, (int)(y+bounds.y + bounds.height)/ Tile.TILE_HEIGHT)){
 				if(npc){
 					if(Utils.clamp(x + velX, walkBounds.x, walkBounds.x + walkBounds.width) == x + velX){
-						x = Utils.clamp(velX+x, 0, Handler.WORLD.getMap().getWidth()*64);
+						x = Utils.clamp((float)(velX+x*delta), 0, Handler.WORLD.getMap().getWidth()*64);
 					}else{
 						setisMoving(false);
 					}
 				}else{
-					x += velX;
+					x += velX*delta;
 				}
 			}else{
 				x = (tempX * Tile.TILE_WIDTH + Tile.TILE_WIDTH - bounds.x);
@@ -131,19 +131,19 @@ public abstract class Creature extends Entity{
 		}
 	}
 	
-	public void moveY(){
+	public void moveY(double delta){
 		if(velY < 0){ //moving Up
 			int tempY = (int)(y + velY + bounds.y) / Tile.TILE_HEIGHT;
 			if(!collisionWithTile((int)((x + bounds.x) / Tile.TILE_WIDTH), tempY) && 
 					!collisionWithTile((int)((x + bounds.x + bounds.width) / Tile.TILE_WIDTH), tempY)){
 				if(npc){
 					if(Utils.clamp(y + velY, walkBounds.y, walkBounds.y + walkBounds.height) == y + velY){
-						y = Utils.clamp(velY+y, 0, Handler.WORLD.getMap().getHeight()*64);
+						y = Utils.clamp((float)(velY+y*delta), 0, Handler.WORLD.getMap().getHeight()*64);
 					}else{
 						setisMoving(false);
 					}
 				}else{
-					y += velY;
+					y += velY*delta;
 				}
 			}else{
 				y = (tempY *Tile.TILE_HEIGHT + Tile.TILE_HEIGHT - bounds.y);
@@ -164,14 +164,14 @@ public abstract class Creature extends Entity{
 					!collisionWithTile((int) (x + bounds.x + bounds.width) / Tile.TILE_WIDTH, tempY)){
 				if(npc){
 					if(Utils.clamp(y + velY, walkBounds.y, walkBounds.y + walkBounds.height) == y + velY){
-						y = Utils.clamp(velY+y, 0, Handler.WORLD.getMap().getHeight()*64);
+						y = Utils.clamp((float)(velY+y*delta), 0, Handler.WORLD.getMap().getHeight()*64);
 					}else{
 						if(walkBounds.y <= 0 || walkBounds.height <= 0){
 						}
 						setisMoving(false);
 					}
 				}else{
-					y += velY;
+					y += velY*delta;
 				}
 			}else{
 				y = (tempY *Tile.TILE_HEIGHT - bounds.y - bounds.height -1);

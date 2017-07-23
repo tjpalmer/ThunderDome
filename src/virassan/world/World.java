@@ -56,9 +56,9 @@ public class World {
 		this.player = player;
 	}
 	
-	public void tick(){
-		map.tick();
-		hud.tick();
+	public void tick(double delta){
+		map.tick(delta);
+		hud.tick(delta);
 		//TODO: move any user input from HUD while game is not paused, into HERE
 		// Mouse Input
 		drag();
@@ -69,8 +69,8 @@ public class World {
 			rightClick();
 		}
 		hover();
-		HUDManager.MENUTIMER += System.currentTimeMillis() - HUDManager.MENULAST;
-		HUDManager.MENULAST = System.currentTimeMillis();
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
+		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
 		boolean pause = handler.getEntityManager().getPaused();
 		// If NOT paused
 		if(!pause){
