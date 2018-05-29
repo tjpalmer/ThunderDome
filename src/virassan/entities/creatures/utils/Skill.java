@@ -1,24 +1,26 @@
 package virassan.entities.creatures.utils;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 
+import virassan.entities.creatures.enemies.Enemy;
+import virassan.entities.creatures.player.Player;
 import virassan.gfx.Animation;
 import virassan.gfx.Assets;
-import virassan.main.ID;
 
 public enum Skill{
 	
-	HEAL_1("Heal", "restore", ID.Player, "health", 4, 0, "mana", 25, 20, Assets.heal_icon),
-	CHOP("Chop", "dmg", ID.Enemy, "basic", 4, 200, "stam", 25, 60, Assets.chop_icon),
-	STAB("Stab", "dmg", ID.Enemy, "basic", 2, 200, "stam", 5, 25, Assets.stab_icon),
-	SLASH("Slash", "dmg", ID.Enemy, "basic", 5, 400, "stam", 15, 50, Assets.slash_icon);
+	HEAL_1("Heal", "restore", Player.class, "health", 4, 0, "mana", 25, 20, Assets.heal_icon),
+	CHOP("Chop", "dmg", Enemy.class, "basic", 4, 200, "stam", 25, 60, Assets.chop_icon),
+	STAB("Stab", "dmg", Enemy.class, "basic", 2, 100, "stam", 5, 25, Assets.stab_icon),
+	SLASH("Slash", "dmg", Enemy.class, "basic", 5, 300, "stam", 15, 50, Assets.slash_icon);
 	
 	
 	private int range;
 	private int cooldown;
 	private String name;
 	private int cost;
-	private ID target;
+	private Class target;
 	private String costType;
 	private String type;
 	private Animation skillAnimation;
@@ -27,7 +29,7 @@ public enum Skill{
 	private int effectAmt;
 	private String effectType;
 	
-	private Skill(String name, String type, ID target, int cooldown, int range, String costType, int cost, BufferedImage icon){
+	private Skill(String name, String type, Class target, int cooldown, int range, String costType, int cost, BufferedImage icon){
 		this.name = name;
 		this.type = type;
 		this.cooldown = cooldown;
@@ -48,7 +50,7 @@ public enum Skill{
 	 * @param effectAmt Amount of effect (ie how much the heal/damage)
 	 * @param icon Picture!
 	 */
-	private Skill(String name, String type, ID target, String effectType, int cooldown, int range, String costType, int cost, int effectAmt, BufferedImage icon){
+	private Skill(String name, String type, Class target, String effectType, int cooldown, int range, String costType, int cost, int effectAmt, BufferedImage icon){
 		this(name, type, target, cooldown, range, costType, cost, icon);
 		this.effectAmt = effectAmt;
 		this.effectType = effectType;
@@ -64,7 +66,7 @@ public enum Skill{
 	 * @param buff Create a new Buff/debuff
 	 * @param icon
 	 */
-	private Skill(String name, String type, ID target, int cooldown, int range, String costType, int cost, Buff buff, BufferedImage icon){
+	private Skill(String name, String type, Class target, int cooldown, int range, String costType, int cost, Buff buff, BufferedImage icon){
 		this(name, type, target, cooldown, range, costType, cost, icon);
 		this.buff = buff;
 	}
@@ -77,7 +79,7 @@ public enum Skill{
 		return effectAmt;
 	}
 	
-	public ID getTarget(){
+	public Class getTarget(){
 		return target;
 	}
 	

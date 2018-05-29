@@ -3,7 +3,7 @@ package virassan.input;
 import java.awt.Point;
 
 public class Node {
-
+	
 	private Point obj;
 	private Node next;
 	

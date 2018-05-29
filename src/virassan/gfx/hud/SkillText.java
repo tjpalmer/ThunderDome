@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 
-import virassan.entities.Entity;
 import virassan.main.Handler;
 import virassan.utils.Utils;
 
@@ -38,7 +37,7 @@ public class SkillText {
 		}
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		if(lifeSpan > 0){
 			lifeSpan -= 0.01F;
 			opacity = Utils.clamp(opacity - 5, 0, 255);

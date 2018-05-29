@@ -9,7 +9,6 @@ import java.awt.event.KeyListener;
  *
  */
 public class KeyInput implements KeyListener{
-	
 	private String text;
 	private boolean isTyping;
 	
@@ -27,8 +26,9 @@ public class KeyInput implements KeyListener{
 	
 	/**
 	 * Ticks whether these keys are pressed/typed/etc
+	 * @param delta 
 	 */
-	public void tick(){
+	public void tick(double delta){
 		one = keys[KeyEvent.VK_1];
 		two = keys[KeyEvent.VK_2];
 		three = keys[KeyEvent.VK_3];
@@ -93,12 +93,9 @@ public class KeyInput implements KeyListener{
 
 	@Override
 	public void keyTyped(KeyEvent e) {
-		// TODO Auto-generated method stub
 		if(isTyping){
 			char keyCharacter = e.getKeyChar();
 			text += keyCharacter;
-			// System.out.println("Key Typed: " + e);
-			// System.out.println("Text: " + text);
 		}
 	}
 
@@ -117,7 +114,6 @@ public class KeyInput implements KeyListener{
 	public String getTyped(){
 		return text;
 	}
-	
 	
 	public void isTyping(boolean b){
 		isTyping = b;

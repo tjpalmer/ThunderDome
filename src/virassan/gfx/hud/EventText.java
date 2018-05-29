@@ -9,24 +9,23 @@ import virassan.main.Handler;
 import virassan.utils.Utils;
 
 public class EventText {
-	private float lifeSpan = 1;
+	private float lifeSpan = 100000;
 	private boolean live;
 	private Handler handler;
 	private String text;
 	private Color color;
 	private Entity entity;
 	private int opacity;
-	private int x, y;
+	private float x, y;
 	private final Font font = new Font(Font.SANS_SERIF, Font.BOLD, 20);
 	
 
-	public EventText(Entity entity, Handler handler, String text, int x, int y) {
+	public EventText(Entity entity, Handler handler, String text, float x, float y) {
 		this.handler = handler;
 		this.entity = entity;
 		live = true;
 		this.text = text;
-		this.x = x;
-		x -= ((text.length()/2)*5);
+		this.x = x - ((text.length()/2)*5);
 		this.y = y - 10;
 		opacity = 255;
 		this.color = new Color(255, 240, 0, opacity);
@@ -37,19 +36,20 @@ public class EventText {
 			g.setFont(font);
 			color = new Color(255, 240, 0, opacity);
 			g.setColor(color);
-			g.drawString(text, x - (int)handler.getGameCamera().getxOffset(), y - (int)handler.getGameCamera().getyOffset());
+			g.drawString(text, (int)x - (int)handler.getGameCamera().getxOffset(), (int)y - (int)handler.getGameCamera().getyOffset());
 		}
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		if(lifeSpan > 0){
-			lifeSpan -= 0.01F;
-			opacity = Utils.clamp(opacity - 5, 0, 255);
+			//TODO: Just testing the delta w/ lifeSpan
+			lifeSpan -= (.001F/delta);
+			opacity = Utils.clamp(opacity - 4, 0, 255);
 		}else{
 			live = false;
 		}
-		x = (int)entity.getX() - ((text.length()/2) * 5);
-		y = (int)entity.getY();
+		x = ((int)entity.getX() - ((text.length()/2) * 5));
+		y = (int)entity.getY() - 10;
 	}
 	
 	public boolean isLive(){

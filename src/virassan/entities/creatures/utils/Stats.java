@@ -2,7 +2,6 @@ package virassan.entities.creatures.utils;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -13,7 +12,6 @@ import virassan.gfx.hud.BouncyText;
 import virassan.gfx.hud.EventText;
 import virassan.items.Equip;
 import virassan.items.Item;
-import virassan.main.ID;
 import virassan.utils.Utils;
 
 public class Stats {
@@ -80,19 +78,20 @@ public class Stats {
 				equip.put(slot, null);
 			}
 			levelExp = new int[MAX_LEVEL + 1];
-			for(int i = 0; i <= MAX_LEVEL; i++){
-				levelExp[i] = i * 500 + 5 * i/3 + i/9;
+			for(float i = 0; i <= MAX_LEVEL; i++){
+				float num = (float)Math.pow(i, 4) + 1;
+				levelExp[(int)i] = (int)((i * 500) + num*(i/2));
 			}
 			this.maxExperience = levelExp[level];
 		}
 	}
 	
 	
-	public void tick(){
+	public void tick(double delta){
 		if(!entity.getHandler().getEntityManager().getPaused()){
 			for(BuffTracker buff : buffs){
 				if(buff.getLive()){
-					buff.tick();
+					buff.tick(delta);
 				}else{
 					buffs.remove(buff);
 				}
@@ -100,20 +99,20 @@ public class Stats {
 		}
 		for(EventText text : eventList){
 			if(text.isLive()){
-				text.tick();
+				text.tick(delta);
 			}else{
 				eventList.remove(text);
 			}
 		}
 		for(BouncyText text : list){
 			if(text.getLive()){
-				text.tick();
+				text.tick(delta);
 			}else{
 				list.remove(text);
 			}
 		}
 		if(!entity.getHandler().getEntityManager().getPaused()){
-			damageTimer += System.currentTimeMillis() - damageLast;
+			damageTimer += (System.currentTimeMillis() - damageLast);
 			damageLast = System.currentTimeMillis();
 			if(isDamaged){
 				if(damageTimer > damageWait){
@@ -123,7 +122,7 @@ public class Stats {
 			}else{
 				if(aggro){
 					if(entity instanceof Enemy){
-						aggroTimer += System.currentTimeMillis() - aggroLast;
+						aggroTimer += (System.currentTimeMillis() - aggroLast);
 						aggroLast = System.currentTimeMillis();
 						if(aggroTimer > 1400){
 							int playerDist = (int)Math.sqrt((double)(Math.pow(entity.getX() - entity.getHandler().getPlayer().getX(), 2) + Math.pow(entity.getY() - entity.getHandler().getPlayer().getY(), 2)));
@@ -134,7 +133,7 @@ public class Stats {
 						}
 					}
 				}else{
-					healTimer += System.currentTimeMillis() - healLast;
+					healTimer += (System.currentTimeMillis() - healLast);
 					healLast = System.currentTimeMillis();
 					if(healTimer > 800){
 						if(health < maxHealth){
@@ -246,16 +245,16 @@ public class Stats {
 	
 	public void unEquip(Equip slot){
 		switch(slot){
-			case MAINHAND: weapDmg -= mainH.getDmgAmt(); ((Player)entity).getInventory().addItems(mainH); mainH = null; break;
-			case OFFHAND: ((Player)entity).getInventory().addItems(offH); offH = null ;break;
-			case HEAD: armorRating -= head.getArmorAmt(); ((Player)entity).getInventory().addItems(head); head = null; break;
-			case CHEST: armorRating -= chest.getArmorAmt(); ((Player)entity).getInventory().addItems(chest); chest = null; break;
-			case LEGS: armorRating -= legs.getArmorAmt(); ((Player)entity).getInventory().addItems(legs); legs = null; break;
-			case FEET: armorRating -= feet.getArmorAmt(); ((Player)entity).getInventory().addItems(feet); feet = null; break;
-			case SHOULDERS: armorRating -= shoulders.getArmorAmt(); ((Player)entity).getInventory().addItems(shoulders); shoulders = null; break;
-			case HANDS: armorRating -= hands.getArmorAmt(); ((Player)entity).getInventory().addItems(hands); hands = null; break;
-			case ACCESS1: ((Player)entity).getInventory().addItems(acc1); acc1 = null; break;
-			case ACCESS2: ((Player)entity).getInventory().addItems(acc2); acc2 = null; break;
+			case MAINHAND: weapDmg -= mainH.getDmgAmt(); ((Player)entity).getInventory().addItems(mainH, false); mainH = null; break;
+			case OFFHAND: ((Player)entity).getInventory().addItems(offH, false); offH = null ;break;
+			case HEAD: armorRating -= head.getArmorAmt(); ((Player)entity).getInventory().addItems(head, false); head = null; break;
+			case CHEST: armorRating -= chest.getArmorAmt(); ((Player)entity).getInventory().addItems(chest, false); chest = null; break;
+			case LEGS: armorRating -= legs.getArmorAmt(); ((Player)entity).getInventory().addItems(legs, false); legs = null; break;
+			case FEET: armorRating -= feet.getArmorAmt(); ((Player)entity).getInventory().addItems(feet, false); feet = null; break;
+			case SHOULDERS: armorRating -= shoulders.getArmorAmt(); ((Player)entity).getInventory().addItems(shoulders, false); shoulders = null; break;
+			case HANDS: armorRating -= hands.getArmorAmt(); ((Player)entity).getInventory().addItems(hands, false); hands = null; break;
+			case ACCESS1: ((Player)entity).getInventory().addItems(acc1, false); acc1 = null; break;
+			case ACCESS2: ((Player)entity).getInventory().addItems(acc2, false); acc2 = null; break;
 		}
 		equip.replace(slot, null);
 	}
@@ -280,9 +279,9 @@ public class Stats {
 	
 	public boolean isLevelUp(){
 		if(level < 40){
-			if(entity.getId() == ID.Player){
+			if(entity.getClass() == Player.class){
 				entity = (Player)entity;
-				if(getMaxExperience(level) <= experience){
+				if(getMaxExperience() <= experience){
 					return true;
 				}
 			}
@@ -313,13 +312,53 @@ public class Stats {
 		experience += amount;
 		list.add(new BouncyText(entity.getHandler(), String.valueOf((int)amount), Color.MAGENTA, (int)(entity.getX() + entity.getWidth()/2), (int)(entity.getY())));
 		if(isLevelUp()){
-			experience = 0;
-			getMaxExperience(level);
+			getMaxExperience();
 			levelUp();
 		}
 	}
 	
-	public int getMaxExperience(int level){
+	/**
+	 * Damages the character for the amount
+	 * @param amount amount to subtract from player health
+	 */
+	public void damage(float amount){
+		isDamaged = true;
+		if(entity instanceof Enemy){
+			aggro = true;
+		}
+		damageTimer = 0;
+		amount = Utils.clamp(amount, 0F, maxHealth);
+		Color myColor = Color.CYAN;
+		if(entity instanceof Player){
+			myColor = Color.RED;
+		}
+		if(health > 0){
+			health = health - amount;
+			health = Utils.clamp(health, 0, maxHealth);
+			healthScale = health/maxHealth;
+			list.add(new BouncyText(entity.getHandler(), String.valueOf((int)amount), myColor, (int)(entity.getX() + entity.getWidth()/2), (int)(entity.getY() + entity.getHeight()/2)));
+		}else{
+			
+		}
+	}
+
+	public void addEventText(String text){
+		eventList.add(new EventText(entity, entity.getHandler(), text, (int)entity.getX(), (int)entity.getY() - 15));
+	}
+	
+	public void addBuff(BuffTracker buff){
+		buffs.add(buff);
+	}
+	
+	public CopyOnWriteArrayList<BuffTracker> getBuffs(){
+		return buffs;
+	}
+	
+	public int getMaxExperience(){
+		return getLevelExperience(level);
+	}
+	
+	public int getLevelExperience(int level){
 		this.maxExperience = levelExp[level];
 		return maxExperience;
 	}
@@ -338,41 +377,6 @@ public class Stats {
 
 	public void setDmgScale(float dmgScale) {
 		this.dmgScale = dmgScale;
-	}
-
-	/**
-	 * Damages the character for the amount
-	 * @param amount amount to subtract from player health
-	 */
-	public void damage(float amount){
-		isDamaged = true;
-		if(entity instanceof Enemy){
-			aggro = true;
-		}
-		damageTimer = 0;
-		amount = Utils.clamp(amount, 0F, maxHealth);
-		Color myColor = Color.CYAN;
-		if(entity.getId() == ID.Player){
-			myColor = Color.RED;
-		}
-		if(health > 0){
-			health -= amount;
-			health = Utils.clamp(health, 0, maxHealth);
-			healthScale = health/maxHealth;
-			list.add(new BouncyText(entity.getHandler(), String.valueOf((int)amount), myColor, (int)(entity.getX() + entity.getWidth()/2), (int)(entity.getY() + entity.getHeight()/2)));
-		}
-	}
-
-	public void addEventText(String text){
-		eventList.add(new EventText(entity, entity.getHandler(), text, (int)entity.getX(), (int)entity.getY() - 15));
-	}
-	
-	public void addBuff(BuffTracker buff){
-		buffs.add(buff);
-	}
-	
-	public CopyOnWriteArrayList<BuffTracker> getBuffs(){
-		return buffs;
 	}
 	
 	//GETTERS AND SETTERS
@@ -423,7 +427,7 @@ public class Stats {
 	public void setMaxStam(float maxStam) {
 		this.maxStam = maxStam;
 	}
-
+	
 	public Item getMainH() {
 		return mainH;
 	}

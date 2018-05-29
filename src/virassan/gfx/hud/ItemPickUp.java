@@ -15,16 +15,16 @@ public class ItemPickUp {
 	
 	public ItemPickUp(BufferedImage image) {
 		this.image = image;
-		lifeSpan = 1F;
+		lifeSpan = 100000.0F;
 		live = true;
 		alpha = 0;
 	}
 
-	public void tick(){
+	public void tick(double delta){
 		if(lifeSpan > 0){
 			image = Utils.transparency(image, (int)alpha);
 			alpha = Utils.clamp((float)(alpha + 0.05F), 0F, 255F);
-			lifeSpan -= 0.01F;
+			lifeSpan -= (0.001F/delta);
 		}else{
 			live = false;
 		}
@@ -32,7 +32,6 @@ public class ItemPickUp {
 	
 	public void render(Graphics g){
 		if(live){
-			//TODO is this gonna work?
 			g.drawImage(image, (int)x, (int)y, null);
 		}
 	}

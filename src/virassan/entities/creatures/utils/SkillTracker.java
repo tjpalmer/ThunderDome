@@ -7,14 +7,13 @@ import virassan.entities.creatures.Creature;
 import virassan.gfx.Animation;
 import virassan.gfx.hud.SkillText;
 import virassan.main.Handler;
-import virassan.main.ID;
 
 public class SkillTracker {
 
 	private BuffTracker buff;
 	private Skill skillType;
 	private Creature entity;
-	private ID target;
+	private Class target;
 	private Animation skillAnimation;
 	int x, y, skillCount;
 	private long skillTimer, skillLast;
@@ -30,8 +29,8 @@ public class SkillTracker {
 		skillCount = skillType.getCooldown();
 	}
 	
-	public void tick(){
-		skillTimer += System.currentTimeMillis() - skillLast;
+	public void tick(double delta){
+		skillTimer += (System.currentTimeMillis() - skillLast);
 		skillLast = System.currentTimeMillis();
 		if(skillTimer >= 1000){
 			skillCount++;
@@ -51,10 +50,10 @@ public class SkillTracker {
 				}
 				skillCount = 0;
 			}else{
-				entity.getHandler().getWorld().getHUD().addSkillList(new SkillText(entity.getHandler(), "Out of Range", Handler.LAVENDER, (int)targ.getX()-10, (int)targ.getY()-10));
+				Handler.GAMESTATE.getHUD().addSkillList(new SkillText(entity.getHandler(), "Out of Range", Handler.LAVENDER, (int)targ.getX()-10, (int)targ.getY()-10));
 			}
 		}else{
-			entity.getHandler().getWorld().getHUD().addSkillList(new SkillText(entity.getHandler(), "Skill Not Ready Yet", Handler.LAVENDER, (int)from.getX() - 20, (int)from.getY()-10));
+			Handler.GAMESTATE.getHUD().addSkillList(new SkillText(entity.getHandler(), "Skill Not Ready Yet", Handler.LAVENDER, (int)from.getX() - 20, (int)from.getY()-10));
 		}
 	}
 	
@@ -85,11 +84,11 @@ public class SkillTracker {
 		this.skillCount = skillCount;
 	}
 	
-	public void setTarget(ID t){
+	public void setTarget(Class t){
 		target = t;
 	}
 	
-	public ID getTarget(){
+	public Class getTarget(){
 		return target;
 	}
 	

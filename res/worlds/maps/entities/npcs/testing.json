@@ -1,0 +1,10 @@
+{"image":"C:\\Users\\Anya\\Documents\\GitHub\\ThunderDome\\res\\textures\\entities\\npc_test.png",
+"quests":[
+	{"ID":"QUEST_YOURMOM"},
+	{"ID":"QUEST_3"}],
+"name":"POOPS_A_LOT",
+"x":38,
+"width":10,
+"y":73,
+"type":"NPC",
+"height":10}

@@ -5,17 +5,15 @@ import virassan.gfx.Animation;
 public class Attack {
 
 	private float speed, damage;
-	private int width, height;
+	private int range;
 	private String name;
 	private Animation animation;
 	
-	public Attack(float speed, float damage, Animation animation, int width, int height, String name) {
-		// TODO Auto-generated constructor stub
+	public Attack(float speed, float damage, Animation animation, int range, String name) {
 		this.speed = speed;
 		this.damage = damage;
 		this.animation = animation;
-		this.width = width;
-		this.height = height;
+		this.range = range;
 		this.name = name;
 	}
 	
@@ -40,20 +38,12 @@ public class Attack {
 		this.damage = damage;
 	}
 
-	public int getWidth() {
-		return width;
+	public int getRange() {
+		return range;
 	}
 
-	public void setWidth(int width) {
-		this.width = width;
-	}
-
-	public int getHeight() {
-		return height;
-	}
-
-	public void setHeight(int height) {
-		this.height = height;
+	public void setRange(int range) {
+		this.range = range;
 	}
 
 	public String getName() {

@@ -1,5 +1,6 @@
 package virassan.gfx;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 /**
@@ -27,4 +28,5 @@ public class SpriteSheet {
 	public BufferedImage sprite(int x, int y, int width, int height){
 		return sheet.getSubimage(x,y,width,height);
 	}
+
 }

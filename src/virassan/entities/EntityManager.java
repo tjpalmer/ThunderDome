@@ -8,16 +8,16 @@ import java.util.Comparator;
 import virassan.entities.creatures.enemies.Enemy;
 import virassan.entities.creatures.npcs.Merchant;
 import virassan.entities.creatures.player.Player;
-import virassan.input.LinkedQueue;
+import virassan.entities.statics.StaticEntity;
 import virassan.main.Display;
 import virassan.main.Handler;
-import virassan.quests.QuestTracker;
 
 public class EntityManager {
 
 	private Handler handler;
 	private Player player;
 	private ArrayList<Entity> entities;
+	private ArrayList<StaticEntity> statics;
 	private boolean isPaused;
 	
 	private Comparator<Entity> renderSorter = new Comparator<Entity>(){
@@ -33,25 +33,27 @@ public class EntityManager {
 	public EntityManager(Handler handler){
 		this.handler = handler;
 		entities = new ArrayList<Entity>();
+		statics = new ArrayList<StaticEntity>();
 		isPaused = false;
 	}
 
-	public void tick(){
+	public void tick(double delta){
 		for(int i = 0; i < entities.size(); i++){
 			if(!entities.get(i).isDead()){
 				if(!(entities.get(i) instanceof Player)){
 					if(!isPaused){
-						entities.get(i).tick();
+						entities.get(i).tick(delta);
 					}else{
 						if(entities.get(i) instanceof Merchant){
-							entities.get(i).tick();
+							entities.get(i).tick(delta);
 						}
 					}
 				}else{
-					entities.get(i).tick();
+					entities.get(i).tick(delta);
 				}
 			}else{
 				if(entities.get(i) instanceof Enemy){
+					/*
 					if(handler.getPlayer().getKillList().containsKey(((Enemy)entities.get(i)).getEnemyType())){
 						if(handler.getPlayer().getKillList().get(((Enemy)entities.get(i)).getEnemyType()) != null){
 							handler.getPlayer().getKillList().replace(((Enemy)entities.get(i)).getEnemyType(), handler.getPlayer().getKillList().get(((Enemy)entities.get(i)).getEnemyType())+1);
@@ -61,36 +63,58 @@ public class EntityManager {
 					}else{
 						handler.getPlayer().getKillList().put(((Enemy)entities.get(i)).getEnemyType(), 1);
 					}
-					System.out.println(handler.getPlayer().getKillList());
+					*/
+					System.out.println("Message: EntityManager_tick " + handler.getPlayer().getKillEnemySpecies() + " : " + handler.getPlayer().getKillEnemyID());
+					/*
 					for(QuestTracker quest : handler.getPlayer().getQuestLog().getActive()){
 						if(quest.getQuest().getHashMap().containsKey(((Enemy)entities.get(i)).getSpecies())){
 							quest.addEnemyCount(((Enemy)entities.get(i)).getSpecies());
-						}else if(quest.getQuest().getHashMap().containsKey(((Enemy)entities.get(i)).getEnemyType())){
-							quest.addEnemyCount(((Enemy)entities.get(i)).getEnemyType());
+						}else if(quest.getQuest().getHashMap().containsKey(((Enemy)entities.get(i)).getEnemyID())){
+							quest.addEnemyCount(((Enemy)entities.get(i)).getEnemyID());
 						}
 					}
+					*/
 				}
 				entities.remove(entities.get(i));
 				i--;
 			}
 		}
 		entities.sort(renderSorter);
+		for(StaticEntity e : statics){
+			if(!isPaused){
+				e.tick(delta);
+			}
+		}
 	}
 	
 	public void render(Graphics g){
 		int xStart = (int)handler.getGameCamera().getxOffset() - 60;
-		int xEnd = (int)(Display.WIDTH + handler.getGameCamera().getxOffset()) + 60;
+		int xEnd = (int)(handler.getGameCamera().getWidth() + handler.getGameCamera().getxOffset()) + 60;
 		int yStart = (int)handler.getGameCamera().getyOffset() - 60;
-		int yEnd = (int)(handler.getGameCamera().getyOffset() + Display.HEIGHT) + 60;
-		for(Entity e : entities){
+		int yEnd = (int)(handler.getGameCamera().getyOffset() + handler.getHeight()) + 60;
+		for(StaticEntity e : statics){
 			if(e.getX() >= xStart-e.getWidth() && e.getX() <= xEnd && e.getY() >= yStart-e.getHeight() && e.getY() <= yEnd){
 				e.render(g);
+			}
+		}
+		for(Entity e : entities){
+			try{
+				if(e.getX() >= xStart-e.getWidth() && e.getX() <= xEnd && e.getY() >= yStart-e.getHeight() && e.getY() <= yEnd){
+					e.render(g);
+				}
+			}catch(NullPointerException k){
+				System.out.println("Error Message: EntityManager_render Entity is: " + e);
+				k.printStackTrace();
 			}
 		}
 	}
 
 	public void addEntity(Entity e){
 		entities.add(e);
+	}
+	
+	public void addStatic(StaticEntity e){
+		statics.add(e);
 	}
 	
 	//Getters and Setters
@@ -108,6 +132,11 @@ public class EntityManager {
 	}
 
 	public void setPlayer(Player player) {
+		for(Entity e : entities){
+			if(e instanceof Player){
+				e.isDead(true);
+			}
+		}
 		this.player = player;
 		addEntity(player);
 	}

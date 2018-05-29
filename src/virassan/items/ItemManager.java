@@ -5,27 +5,29 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import virassan.entities.creatures.utils.Move;
 import virassan.gfx.Assets;
 import virassan.gfx.hud.ItemPickUp;
 import virassan.main.Display;
 import virassan.main.Handler;
-import virassan.main.Vector2F;
 
 public class ItemManager{
 
 	private CopyOnWriteArrayList<ItemPickUp> itemsPicked = new CopyOnWriteArrayList<>();
 	
 	private ArrayList<Drop> items;
-	private final int PICKUP_DIST = 100;
+	public static final int PICKUP_DIST = 100;
 	private Handler handler;
 	
 	private long timer, lastTime;
-	private final int speed = 450;
+	private final int interval = 450;
+	private int speed;
 	
 	public ItemManager(Handler handler) {
 		items = new ArrayList<Drop>();
 		this.handler = handler;
 		timer = 0;
+		speed = 2;
 	}
 	
 	public void addItem(Drop item){
@@ -41,37 +43,26 @@ public class ItemManager{
 		}
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		for(ItemPickUp item : itemsPicked){
 			if(item.isLive()){
-				item.tick();
+				item.tick(delta);
 			}else{
 				itemsPicked.remove(item);
 			}
 		}
 		timer += System.currentTimeMillis() - lastTime;
 		lastTime = System.currentTimeMillis();
-		if(timer >= speed){
+		if(timer >= interval){
 			for(int i = 0; i < items.size(); i++){
-				double playerDist = Math.sqrt((double)(Math.pow((items.get(i).getPos().xPos + Assets.ITEM_WIDTH/2) - (handler.getPlayer().getX() + handler.getPlayer().getWidth()/2), 2) + Math.pow((items.get(i).getPos().yPos + Assets.ITEM_HEIGHT/2) - (handler.getPlayer().getY() + handler.getPlayer().getHeight()/2), 2)));
+				double playerDist = Math.sqrt((double)(Math.pow(items.get(i).getCenter().dX - handler.getPlayer().getCenter().dX, 2) + 
+						Math.pow(items.get(i).getCenter().dY - handler.getPlayer().getCenter().dY, 2)));
 				if(playerDist <= PICKUP_DIST){
-					int velX = 0;
-					int velY = 0;
-					if(handler.getPlayer().getX() + handler.getPlayer().getWidth()/2 > items.get(i).getPos().xPos + Assets.ITEM_WIDTH/2){
-						velX += 1;
-					}else if(handler.getPlayer().getX() + handler.getPlayer().getWidth()/2 < items.get(i).getPos().xPos + Assets.ITEM_WIDTH/2){
-						velX -= 1;
-					}
-					if(handler.getPlayer().getY() + handler.getPlayer().getHeight()/2 > items.get(i).getPos().yPos + Assets.ITEM_HEIGHT/2){
-						velY += 1;
-					}else if(handler.getPlayer().getY() + handler.getPlayer().getHeight()/2 < items.get(i).getPos().yPos + Assets.ITEM_HEIGHT/2){
-						velY -= 1;
-					}
-					items.get(i).setPos(new Vector2F(items.get(i).getPos().xPos + velX, items.get(i).getPos().yPos + velY));
+					Move.move(items.get(i), speed, -1, (float)delta);
 				}
-				if(playerDist <= 5){
-					//TODO : add item to itemspickedup list
-					handler.getPlayer().getInventory().addItems(items.get(i).getItem());
+				//TODO: not picking them up proper - has been picking them up super quick
+				if(Move.isHit(items.get(i).getCenter())){
+					handler.getPlayer().getInventory().addItems(items.get(i).getItem(), true);
 					items.remove(items.get(i));
 					i--;
 				}
@@ -82,10 +73,10 @@ public class ItemManager{
 	
 	public void render(Graphics g){
 		for(Drop i : items){
-			g.drawImage(i.getItem().getImage(), (int)(i.getPos().xPos - handler.getGameCamera().getxOffset()), (int)(i.getPos().yPos - handler.getGameCamera().getyOffset()), null);
+			g.drawImage(i.getItem().getImage(), (int)(i.getPos().dX - handler.getGameCamera().getxOffset()), (int)(i.getPos().dY - handler.getGameCamera().getyOffset()), null);
 		}
-		int x = Display.WIDTH - Assets.ITEM_WIDTH - 5;
-		int y = Display.HEIGHT - Assets.ITEM_HEIGHT - 5;
+		int x = handler.getWidth() - Assets.ITEM_WIDTH - 5;
+		int y = handler.getHeight() - Assets.ITEM_HEIGHT - 5;
 		for(ItemPickUp item : itemsPicked){
 			if(item.isLive()){
 				item.setX(x);

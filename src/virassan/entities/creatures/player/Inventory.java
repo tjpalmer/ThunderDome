@@ -48,7 +48,7 @@ public class Inventory{
 		food = new ArrayList<Item>();
 		*/
 		counts = new HashMap<Item, Integer>();
-		//TODO add a misc item
+		//TODO add a misc item?
 		// curItemList = food;
 		slots = new Rectangle[8][5];
 		float x = 48;
@@ -95,8 +95,10 @@ public class Inventory{
 	 * Adds an Item to the Inventory and Updates its stack count
 	 * @param item the Item to be added
 	 */
-	public void addItems(Item item){
-		player.getHandler().getItemManager().addItem(item.getImage());
+	public void addItems(Item item, boolean show){
+		if(show){
+			player.getHandler().getItemManager().addItem(item.getImage());
+		}
 		boolean isFound = false;
 		if(counts.containsKey(item)){
 			counts.replace(item, counts.get(item)+1);
@@ -139,12 +141,16 @@ public class Inventory{
 		}
 	}
 	
-	public void addItems(Item item, int amount){
+	public void addItems(Item item, int amount, boolean show){
 		for(int i = 0; i < amount; i++){
-			addItems(item);
+			addItems(item, show);
 		}
 	}
 	
+	/**
+	 * Returns of a list of the Items currently in Inventory
+	 * @return an ArrayList of Items currently in inventory
+	 */
 	public ArrayList<Item> getItems(){
 		ArrayList<Item> temp = new ArrayList<Item>();
 		for(Item i : counts.keySet()){
@@ -155,9 +161,7 @@ public class Inventory{
 		return temp;
 	}
 	
-	//TODO: finish method, complete switch cases
 	public void useItem(Item item){
-		// TODO complete the rest of the types of items
 		Item[][] items = getItemSlots(item.getItemType());
 		Point target = null;
 		for(int i = 0; i < items.length; i++){
@@ -174,24 +178,25 @@ public class Inventory{
 					switch(item.getType()){
 						case "rHealth": 
 							player.getStats().heal((float)item.getAddAmt());
-							removeItem(target, foodSlots); System.out.println("HEALED FOR: " + item.getAddAmt());
+							removeItem(target, foodSlots); 
+							System.out.println("Message: Inventory_useItem healed for: " + item.getAddAmt());
 								break;
 						case "mExp":
-							//TODO: do stuff
+							//TODO: multiply % of exp earned
 							break;
 						case "mDmg":
-							//TODO
+							//TODO: multiply by % of damage player does
 							break;
 						case "tHealth":
-							//TODO
+							//TODO: this work? is it finished? who knows?
 							player.getStats().addBuff(new BuffTracker(player, Assets.buff001, "buff", item.getName(), "heal", (int)item.getAddAmt(), item.getAddTimer()));
 							removeItem(target, foodSlots);
 							break;
 						case "tMana":
-							// TODO
+							// TODO: heal mana over time
 							break;
 						case "tStam":
-							//TODO
+							//TODO: heal stamina over time
 							break;
 						case "rStam":
 							player.getStats().setStamina(Utils.clamp((float)(player.getStats().getStamina() + item.getAddAmt()), 0F, player.getStats().getMaxStam()));
@@ -203,7 +208,6 @@ public class Inventory{
 				}
 			}break;
 		case WEAPON:
-			//TODO: implement equip crap here~
 			if(counts.get(item) > 0){
 				removeItem(target, weapSlots);
 				player.getStats().equip(item);
@@ -299,9 +303,7 @@ public class Inventory{
 	
 	public boolean removeItem(Point target, Item[][] items){
 		if(target != null){
-			System.out.println("Before - " + counts.get(items[target.x][target.y]));
 			counts.replace(items[target.x][target.y], counts.get(items[target.x][target.y]) - 1);
-			System.out.println("After - " + counts.get(items[target.x][target.y]));
 			if(counts.get(items[target.x][target.y]) <= 0){
 				counts.remove(items[target.x][target.y]);
 				items[target.x][target.y] = null;
@@ -325,9 +327,11 @@ public class Inventory{
 					case JUNK: removeItem(temp, junkSlots); break;
 					case MISC: removeItem(temp, miscSlots); break;
 					}
+					/*
+					//Moved this bit to removeItem(Point, Item[][]) - so it's redundant
 					if(counts.get(item) <= 0){
 						counts.remove(item);
-					}
+					}*/
 					return true;
 				}
 			}

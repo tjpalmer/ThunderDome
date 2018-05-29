@@ -1,15 +1,18 @@
 package virassan.entities.creatures.player;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import virassan.entities.creatures.Creature;
-import virassan.entities.creatures.enemies.EnemyType;
+import virassan.entities.creatures.enemies.Enemy;
+import virassan.entities.creatures.enemies.EnemySpecies;
 import virassan.entities.creatures.npcs.Merchant;
 import virassan.entities.creatures.npcs.NPC;
 import virassan.entities.creatures.player.traits.Traits;
-import virassan.entities.creatures.utils.Skill;
+import virassan.entities.creatures.utils.Move;
 import virassan.entities.creatures.utils.SkillTracker;
 import virassan.entities.creatures.utils.Stats;
 import virassan.gfx.Animation;
@@ -17,8 +20,6 @@ import virassan.gfx.Assets;
 import virassan.input.KeyInput;
 import virassan.input.MouseInput;
 import virassan.main.Handler;
-import virassan.main.ID;
-import virassan.quests.QuestTracker;
 import virassan.utils.Utils;
 import virassan.world.maps.Tile;
 
@@ -31,6 +32,7 @@ public class Player extends Creature{
 	private ArrayList<SkillTracker> skillList;
 	private SkillTracker activeSkill;
 	private boolean skillActive;
+	private int curSkillIndex;
 	
 	// Traits stuff
 	private Traits traits;
@@ -38,7 +40,9 @@ public class Player extends Creature{
 	// NPC stuff
 	private NPC currentNPC;
 	private Merchant currentMerchant;
-
+	private HashMap<String, ArrayList<Boolean>> npcMetLiked; //<npcID, [met bool, liked bool]>
+	
+	
 	private String name;
 	private boolean isPaused;
 	
@@ -51,15 +55,27 @@ public class Player extends Creature{
 	
 	// Quest crap
 	private QuestLog questLog;
-	private HashMap<EnemyType, Integer> killList;
+	
+	// Extra Player Info
+	private HashMap<EnemySpecies, Integer> killEnemySpecies;
+	private HashMap<String, Integer> killEnemyID;
 	
 	//Animation crap
-	private Animation walkLeft, walkRight, walkUp, walkDown, animation;
+	private Animation walkLeft, walkRight, walkUp, walkUpRight, walkUpLeft, walkDown, walkDownRight, walkDownLeft, animation;
 	private Animation[] walking;
 	
 	// Key Input
 	KeyInput keyInput;
 	MouseInput mouseInput;
+	
+	/**
+	 * Constructor for creating Player object before loading from Save file.
+	 * @param handler
+	 * @param id
+	 */
+	public Player(Handler handler){
+		this(handler, 0, 0, 32, 32, "/textures/entities/player.png");
+	}
 	
 	/**
 	 * Constructs the Player
@@ -69,21 +85,20 @@ public class Player extends Creature{
 	 * @param id Id Enum
 	 * @param filepath File containing the Player's SpriteSheet
 	 */
-	public Player(Handler handler, float x, float y, ID id, int width, int height, String filepath) {
-		super(handler, "Default", x, y, width, height, 1, id);
+	public Player(Handler handler, float x, float y, int width, int height, String filepath) {
+		super(handler, "Default", x, y, width, height, 1);
 		keyInput = handler.getKeyInput();
 		mouseInput = handler.getMouseInput();
-		QuestTracker.handler = handler;
 		this.name = "Player";
 		stats = new Stats(this, 150, 75, 75, 1);
-		System.out.println(stats.getMaxStam());
 		stats.setDmgMod(0.02f);
 		stats.setArmorRating(1);
 		damaged = false;
 		npc = false;
-		killList = new HashMap<EnemyType, Integer>();
+		npcMetLiked = new HashMap<>();
+		killEnemySpecies = new HashMap<EnemySpecies, Integer>();
+		killEnemyID = new HashMap<String, Integer>();
 		inventory = new Inventory(this);
-		walking = new Animation[5];
 		bounds.x = (int)(x + width/6);
 		bounds.y = (int)(y + 3*height/4);
 		bounds.width = 20;
@@ -91,19 +106,12 @@ public class Player extends Creature{
 		direction = 1;
 		gold = 50;
 		
+		speed = 7.0F;
+		
 		questLog = new QuestLog(this);
 		
 		//Animation Shtuff
-		Assets playerSprites = new Assets(filepath);
-		walkLeft = new Animation(350, playerSprites.getWalkingLeft());
-		walkRight = new Animation(350, playerSprites.getWalkingRight());
-		walkUp = new Animation(350, playerSprites.getWalkingUp());
-		walkDown = new Animation(350, playerSprites.getWalkingDown());
-		animation = walkDown;
-		walking[0] = walkUp;
-		walking[1] = walkDown;
-		walking[2] = walkRight;
-		walking[3] = walkLeft;
+		initAnimation(filepath);
 		
 		//Traits
 		traits = new Traits(this, 3, 5, 3, 5, 2);
@@ -111,34 +119,45 @@ public class Player extends Creature{
 		//Skills
 		skillBar = new SkillTracker[5];
 		skillList = new ArrayList<SkillTracker>();
-		/*
-		skillList.add(new SkillTracker(this, Skill.STAB, animation));
-		skillList.add(new SkillTracker(this, Skill.SLASH, animation));
-		skillList.add(new SkillTracker(this, Skill.HEAL_1, animation));
-		skillList.add(new SkillTracker(this, Skill.CHOP, animation));
-		for(int i = 0; i < skillBar.length; i++){
-			if(i < skillList.size()){
-				skillBar[i] = skillList.get(i);
-			}
-		}*/
 		skillActive = false;
 	}
 
+	private void initAnimation(String filepath){
+		walking = new Animation[8];
+		Assets playerSprites = new Assets(filepath);
+		int animeSpeed = 800;
+		walkLeft = new Animation(animeSpeed, playerSprites.getWalkingLeft());
+		walkRight = new Animation(animeSpeed, playerSprites.getWalkingRight());
+		walkUp = new Animation(animeSpeed, playerSprites.getWalkingUp());
+		walkUpRight = new Animation(animeSpeed, playerSprites.getWalkingUpRight());
+		walkUpLeft = new Animation(animeSpeed, playerSprites.getWalkingUpLeft());
+		walkDown = new Animation(animeSpeed, playerSprites.getWalkingDown());
+		walkDownRight = new Animation(animeSpeed, playerSprites.getWalkingDownRight());
+		walkDownLeft = new Animation(animeSpeed, playerSprites.getWalkingDownLeft());
+		animation = walkDown;
+		walking[0] = walkRight;
+		walking[1] = walkUpRight;
+		walking[2] = walkUp;
+		walking[3] = walkUpLeft;
+		walking[4] = walkLeft;
+		walking[5] = walkDownLeft;
+		walking[6] = walkDown;
+		walking[7] = walkDownRight;
+	}
+	
 	/**
 	 * Ticks the Player - checking KeyInput, animation, movement, and GameCamera
 	 */
-	public void tick() {
+	public void tick(double delta) {
 		isPaused = handler.getEntityManager().getPaused();
-		getInput();
+		getInput(delta);
 		if(!isPaused){
 			for(SkillTracker s : skillList){
-				s.tick();
+				s.tick(delta);
 			}
-			
-			move();
-			animation.tick();
-			y = Utils.clamp((int)y, 0, handler.getWorld().getMap().getHeight() * Tile.TILE_HEIGHT - height);
-			x = Utils.clamp((int)x, 0, handler.getWorld().getMap().getWidth() * Tile.TILE_WIDTH - width);
+			animation.tick(delta);
+			vector.dY = Utils.clamp((int)vector.dY, 0, handler.getMap().getHeight() * Tile.TILE_HEIGHT - height);
+			vector.dX = Utils.clamp((int)vector.dX, 0, handler.getMap().getWidth() * Tile.TILE_WIDTH - width);
 			handler.getGameCamera().centerOnEntity(this);
 			if(stats.isDamaged()){
 				if(damageTime > 0){
@@ -155,14 +174,14 @@ public class Player extends Creature{
 	/**
 	 * Checks player Input via Keyboard and adjusts movement and animation
 	 */
-	private void getInput(){
+	private void getInput(double delta){
 		if(!isPaused){
 			// Movement
-			movement(keyInput.W, keyInput.S, keyInput.A, keyInput.D);
+			movement(delta, keyInput.W, keyInput.S, keyInput.A, keyInput.D);
 			
 			// Special Commands
 			if(keyInput.E){
-				timerTwo += System.currentTimeMillis() - otherTime;
+				timerTwo += (System.currentTimeMillis() - otherTime);
 				otherTime = System.currentTimeMillis();
 				if(timerTwo > 100){
 					stats.heal(5);
@@ -170,7 +189,7 @@ public class Player extends Creature{
 				}
 			}
 			else if(keyInput.Q){
-				timer += System.currentTimeMillis() - lastTime;
+				timer += (System.currentTimeMillis() - lastTime);
 				lastTime = System.currentTimeMillis();
 				if(timer > 100){
 					stats.damage(2);
@@ -178,43 +197,13 @@ public class Player extends Creature{
 				}
 			}
 			else if(keyInput.R){
-				timerTwo += System.currentTimeMillis() - otherTime;
+				timerTwo += (System.currentTimeMillis() - otherTime);
 				otherTime = System.currentTimeMillis();
 				if(timerTwo > 100){
 					stats.addExperience(100);
 					timerTwo = 0;
 				}
 			}
-			
-			/*
-			//Attacking
-			attacking(keyInput.A, attackA);
-			attacking(keyInput.W, attackW);
-			attacking(keyInput.S, attackS);
-			attacking(keyInput.D, attackD);
-
-			// Skills Bar
-			
-			if(skillActive){
-				if(mouseInput.isLeftClicked()){
-					System.out.println("Skill active and gonna try the thing");
-					skillAction(activeSkill.getTarget(), activeSkill);
-					skillActive = false;
-					System.out.println("Skill deactive");
-				}
-			}else if(mouseInput.isLeftClicked()){
-				if(!skillActive){
-					for(Skill s : skillBar){
-						if(s != null){
-							if(mouseInput.getMouseBounds().intersects(s.getBounds())){
-								System.out.println("Skill Active!");
-								skillActive = true;
-								activeSkill = s;
-							}
-						}
-					}
-				}
-			}*/
 		}
 	}
 	
@@ -223,8 +212,13 @@ public class Player extends Creature{
 	 * @param g The Graphics for the Game
 	 */
 	public void render(Graphics g) {
+		float xrel = vector.normalize().dX ;//* handler.getGameCamera().getWidth();
+		float yrel = vector.normalize().dY ;//* handler.getGameCamera().getHeight();
+		
 		if(animation.getCurrentFrame() != null){
-			g.drawImage(animation.getCurrentFrame(), (int) (x - handler.getGameCamera().getxOffset()), (int) (y - handler.getGameCamera().getyOffset()), null);
+			g.drawImage(animation.getCurrentFrame(), (int) (xrel - handler.getGameCamera().getxOffset()), (int) (yrel - handler.getGameCamera().getyOffset()), null);
+			g.setColor(Color.RED);
+			g.drawRect(getCollisionBounds(-handler.getGameCamera().getxOffset(), -handler.getGameCamera().getyOffset()).x, getCollisionBounds(-handler.getGameCamera().getxOffset(), -handler.getGameCamera().getyOffset()).y, getCollisionBounds(handler.getGameCamera().getxOffset(), handler.getGameCamera().getyOffset()).width, getCollisionBounds(handler.getGameCamera().getxOffset(), handler.getGameCamera().getyOffset()).height);
 		}else{
 			//g.drawImage(sprite, (int) (x - handler.getGameCamera().getxOffset()), (int) (y - handler.getGameCamera().getyOffset()), null);
 		}
@@ -235,40 +229,43 @@ public class Player extends Creature{
 	 * If an arrow key is pressed, changes Player velocity
 	 * @param b if any arrow key is pressed
 	 */
-	private void movement(boolean up, boolean down, boolean left, boolean right){
-		//TODO: Cap it when pressing up/down and left/right
-		float xmin = 0;
-		float ymin = 0;
-		velY = 0;
-		velX = 0;
-		if(down){
+	private void movement(double delta, boolean up, boolean down, boolean left, boolean right){
+		if(up && right){
 			direction = 1;
-			velY += speed;
-			ymin = 0;
 		}
-		if(left){
+		else if(up && left){
 			direction = 3;
-			velX -= speed;
-			xmin = -speed;
 		}
-		if(right){
-			direction = 2;
-			velX += speed;
-			xmin = 0;
+		else if(down && right){
+			direction = 7;
 		}
-		if(up){
+		else if(down && left){
+			direction = 5;
+		}
+		else if(down){
+			direction = 6;
+		}
+		else if(left){
+			direction = 4;
+		}
+		else if(right){
 			direction = 0;
-			velY -= speed;
-			ymin = -speed;
 		}
-		animation = walking[direction];
-		animation.start();
-		animation.setAnimationLoop(true);
-		animation.setTimeShared(true);
-		if(!up && !down && !right && !left)
+		else if(up){
+			direction = 2;
+		}else{
+			direction = -1;
+		}
+		isMoving = Move.move(this, speed, direction, (float)delta);
+		if(isMoving){
+			animation = walking[direction];
+			animation.start();
+			animation.setAnimationLoop(true);
+			animation.setTimeShared(true);
+		}else{
 			animation.setAnimationLoop(false);
-		velY = Utils.clamp(velY, ymin, ymin + speed);
-		velX = Utils.clamp(velX, xmin, xmin + speed);
+		}
+		
 	}
 	
 	/**
@@ -318,8 +315,27 @@ public class Player extends Creature{
 		traits = new Traits(this, speech, end, res, dex, intel);
 	}
 
-	public HashMap<EnemyType, Integer> getKillList() {
-		return killList;
+	public HashMap<String, Integer> getKillEnemyID(){
+		return killEnemyID;
+	}
+	
+	public HashMap<EnemySpecies, Integer> getKillEnemySpecies() {
+		return killEnemySpecies;
+	}
+	
+	public void addKillList(Enemy enemy){
+		//TODO: wtf is the point of the Soldier class? Maybe for different behaviors? 
+		if(killEnemySpecies.containsKey(enemy.getSpecies())){
+			killEnemySpecies.replace(enemy.getSpecies(), killEnemySpecies.get(enemy.getSpecies()) + 1);
+		}else{
+			killEnemySpecies.put(enemy.getSpecies(), 1);
+		}
+		if(killEnemyID.containsKey(enemy.getEnemyID())){
+			killEnemyID.replace(enemy.getEnemyID(), killEnemyID.get(enemy.getEnemyID()) + 1);
+		}else{
+			killEnemyID.put(enemy.getEnemyID(), 1);
+		}
+		
 	}
 	
 	public String toString(){
@@ -376,5 +392,56 @@ public class Player extends Creature{
 	
 	public ArrayList<SkillTracker> getSkills(){
 		return skillList;
+	}
+	
+	public void setCurSkillIndex(int index){
+		curSkillIndex = index;
+	}
+	
+	public int getCurSkillIndex(){
+		return curSkillIndex;
+	}
+
+	public void setNPCMetLiked(HashMap<String, ArrayList<Boolean>> hash){
+		npcMetLiked = hash;
+	}
+	
+	public HashMap<String, ArrayList<Boolean>> getNpcMetLiked(){
+		return npcMetLiked;
+	}
+	
+	public void setNPCMet(String npcID){
+		if(npcMetLiked.containsKey(npcID)){
+			System.out.println("Error Message: Player_setNPCMet NPC_ALREADY_MET");
+		}else{
+			npcMetLiked.put(npcID, new ArrayList<Boolean>(Arrays.asList(true, true)));
+		}
+	}
+	
+	public void setNPCLiked(String npcID, boolean liked){
+		if(npcMetLiked.containsKey(npcID)){
+			npcMetLiked.replace(npcID, new ArrayList<Boolean>(Arrays.asList(npcMetLiked.get(npcID).get(0), liked)));
+		}else{
+			npcMetLiked.put(npcID, new ArrayList<Boolean>(Arrays.asList(true, liked)));
+		}
+	}
+	
+	public boolean isNPCMet(String npcID){
+		if(npcMetLiked.containsKey(npcID)){
+			return npcMetLiked.get(npcID).get(0).booleanValue();
+		}
+		return false;
+	}
+	
+	public boolean isNPCLiked(String npcID){
+		if(npcMetLiked.containsKey(npcID)){
+			return npcMetLiked.get(npcID).get(1).booleanValue();
+		}
+		return false;
+	}
+	
+	@Override
+	public Class findClass() {
+		return getClass();
 	}
 }

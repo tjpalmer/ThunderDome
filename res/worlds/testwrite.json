@@ -1,0 +1,54 @@
+{"res":6,
+"yOffset":0,
+"xOffset":40,
+"int":4,
+"player_exp":0,
+"str":13,
+"player_gold":50,
+"dex":13,
+"char":6,
+"player_name":"Player",
+"arrays":[
+	{"equip":[
+		{"item":""},
+		{"item":"BROAD_SWORD"},
+		{"item":""},
+		{"item":""},
+		{"item":""},
+		{"item":""},
+		{"item":""},
+		{"item":""},
+		{"item":""},
+		{"item":""}]},
+	{"inventory":[
+		{"item":"BANDAID","stack":1},
+		{"item":"GREEN_APPLE","stack":1},
+		{"item":"TOAST","stack":2},
+		{"item":"DAGGER","stack":1},
+		{"item":"SLIME","stack":4},
+		{"item":"APPLE","stack":6},
+		{"item":"FEATHER","stack":1}]},
+	{"skillbar":[
+		{"skill":"STAB","index":0},
+		{"skill":"SLASH","index":1},
+		{"skill":"HEAL_1","index":2},
+		{"skill":"CHOP","index":3},
+		{"skill":"","index":4}]},
+	{"active_quests":[
+		{"quest":"QUEST_2"},
+		{"reqs":[
+			{"amt":0,"req":"SLIME"}]},
+		{"quest":"QUEST_3"},
+		{"reqs":[
+			{"amt":2,"req":"TOAST"},
+			{"amt":0,"req":"CAPTAIN"}]}]},
+	{"completed_quests":[
+		]},
+	{"buffs":[
+		]},
+	{"skills":[
+		{"skill":"STAB"},
+		{"skill":"SLASH"},
+		{"skill":"HEAL_1"},
+		{"skill":"CHOP"}]}],
+"player_level":1,"map":"res\/worlds\/maps\/world3.txt"}

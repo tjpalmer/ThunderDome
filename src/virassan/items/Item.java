@@ -1,11 +1,10 @@
 package virassan.items;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
-
 import virassan.gfx.Assets;
-import virassan.utils.Utils;
 
 
 public enum Item{
@@ -13,6 +12,7 @@ public enum Item{
 	// ORDER by Alphabet!
 	// A
 	APPLE("Apple", ItemType.FOOD, 0, "A tasty red apple!", 10, "rHealth", 10, Assets.apple),
+	APPLE_PIE("Apple Pie", ItemType.FOOD, 0, "Delicious apple pie", 25, "rHealth", 10, Assets.apple),
 	
 	// B
 	BANDAID("Bandaid", ItemType.JUNK, 0, "Ew, a used bandaid.", 5, Assets.bandaid),
@@ -75,7 +75,8 @@ public enum Item{
 	// W
 	WOODCUTTER_AXE("Woodcutter's Axe", ItemType.WEAPON, 1, "Chop them into firewood!", Equip.MAINHAND, 35, 20, Assets.woodcutter_axe);
 	
-	
+	private static final int DEFAULT_RANGE = 40;
+	private int weapRange;
 	private String name, description, type;
 	private ItemType itemType;
 	private Equip slot;
@@ -142,6 +143,12 @@ public enum Item{
 		this.stack = stack;
 		this.dmgAmt = dmgAmt;
 		this.slot = slot;
+		this.weapRange = DEFAULT_RANGE;
+	}
+	
+	private Item(String name, ItemType itemType, int stack, String description, Equip slot, int range, int buyPrice, int dmgAmt, BufferedImage image){
+		this(name, itemType, stack, description, slot, buyPrice, dmgAmt, image);
+		this.weapRange = range;
 	}
 	
 	private Item(String name, ItemType itemType, int stack, int armorAmt, String description, Equip slot, int buyPrice, BufferedImage image) {
@@ -157,7 +164,10 @@ public enum Item{
 	}
 	
 	//GETTERS
-
+	public int getWeapRange(){
+		return weapRange;
+	}
+	
 	public Equip getEquip(){
 		return slot;
 	}
@@ -196,6 +206,15 @@ public enum Item{
 	
 	public BufferedImage getImage() {
 		return image;
+	}
+	
+	public int getWidth(){
+		return image.getWidth();
+	}
+	
+	//FIXME: how to get height of Image?
+	public int getHeight(){
+		return image.getHeight();
 	}
 	
 	public int getPrice(){
