@@ -1,5 +1,6 @@
 package virassan.gfx;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 /**
@@ -13,7 +14,7 @@ public class Animation {
 	private boolean timeShared = false;
 	private boolean animeLoop = false;
 	private int speed, index;
-	private BufferedImage[] frames;
+	private Image[] frames;
 	private long lastTime, timer;
 	private boolean stopped;
 	private int totalFrames;
@@ -21,10 +22,10 @@ public class Animation {
 	
 	/**
 	 * Constructs the Animation
-	 * @param speed how often to change the frame in milliseconds //TODO: I think it's milliseconds?
+	 * @param speed how often to change the frame in milliseconds (i think)
 	 * @param frames BufferedImage Array of frames to be used in the animation.
 	 */
-	public Animation(int speed, BufferedImage[] frames){
+	public Animation(int speed, Image[] frames){
 		this.speed = speed;
 		this.frames = frames;
 		// idleFrame = 0;
@@ -48,7 +49,7 @@ public class Animation {
 	}
 	
 	/**
-	 * Set if sharing timer with all animations or not //TODO: In attempt to not get weird animation when switching directions
+	 * Set if sharing timer with all animations or not in attempt to not get weird animation when switching directions
 	 * @param timeShared if true, adds to the shared timer, if false it doesn't
 	 */
 	public void setTimeShared(boolean timeShared){
@@ -72,10 +73,10 @@ public class Animation {
 	 */
 	public void tick(double delta){
 		if(!stopped){
-			timer += (System.currentTimeMillis() - lastTime) * delta;
-			lastTime = System.currentTimeMillis() * (long)delta;
+			timer += (System.currentTimeMillis() - lastTime);
+			lastTime = System.currentTimeMillis();
 			if(timeShared){
-				timer += (System.currentTimeMillis() - sharedLastTime) * delta;
+				timer += (System.currentTimeMillis() - sharedLastTime);
 			}
 			if(timer > speed){
 				index--;
@@ -127,7 +128,7 @@ public class Animation {
 	 * Returns the current animation Frame
 	 * @return the current animation frame
 	 */
-	public BufferedImage getCurrentFrame(){
+	public Image getCurrentFrame(){
 		return frames[index];
 	}
 	

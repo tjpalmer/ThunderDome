@@ -2,7 +2,7 @@ package virassan.items;
 
 import java.util.Random;
 
-import virassan.main.Vector2F;
+import virassan.utils.Vector2F;
 
 public class Drop implements Comparable{
 
@@ -18,10 +18,8 @@ public class Drop implements Comparable{
 	public boolean isDropped(){
 		double ran = new Random().nextDouble();
 		if(ran <= chance){
-			//System.out.println("Item: " + item + " ran: " + ran + " - chance: " + chance);
 			return true;
 		}
-		//System.out.println("Item: " + item + " ran: " + ran + " - chance: " + chance);
 		return false;
 	}
 
@@ -31,6 +29,10 @@ public class Drop implements Comparable{
 	
 	public Vector2F getPos(){
 		return pos;
+	}
+	
+	public Vector2F getCenter(){
+		return (pos.add(new Vector2F(item.getWidth()/2, item.getHeight()/2)));
 	}
 	
 	public void setChance(double chance){

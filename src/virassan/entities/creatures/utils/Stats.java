@@ -2,7 +2,6 @@ package virassan.entities.creatures.utils;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -13,7 +12,6 @@ import virassan.gfx.hud.BouncyText;
 import virassan.gfx.hud.EventText;
 import virassan.items.Equip;
 import virassan.items.Item;
-import virassan.main.ID;
 import virassan.utils.Utils;
 
 public class Stats {
@@ -85,11 +83,6 @@ public class Stats {
 				levelExp[(int)i] = (int)((i * 500) + num*(i/2));
 			}
 			this.maxExperience = levelExp[level];
-			/*
-			for(int i = 1; i <= MAX_LEVEL; i++){
-				System.out.println(levelExp[i]);
-			}
-			*/
 		}
 	}
 	
@@ -119,8 +112,8 @@ public class Stats {
 			}
 		}
 		if(!entity.getHandler().getEntityManager().getPaused()){
-			damageTimer += (System.currentTimeMillis() - damageLast) * delta;
-			damageLast = System.currentTimeMillis() * (long)delta;
+			damageTimer += (System.currentTimeMillis() - damageLast);
+			damageLast = System.currentTimeMillis();
 			if(isDamaged){
 				if(damageTimer > damageWait){
 					damageTimer = 0;
@@ -129,8 +122,8 @@ public class Stats {
 			}else{
 				if(aggro){
 					if(entity instanceof Enemy){
-						aggroTimer += (System.currentTimeMillis() - aggroLast) * delta;
-						aggroLast = System.currentTimeMillis() * (long)delta;
+						aggroTimer += (System.currentTimeMillis() - aggroLast);
+						aggroLast = System.currentTimeMillis();
 						if(aggroTimer > 1400){
 							int playerDist = (int)Math.sqrt((double)(Math.pow(entity.getX() - entity.getHandler().getPlayer().getX(), 2) + Math.pow(entity.getY() - entity.getHandler().getPlayer().getY(), 2)));
 							if(playerDist > ((Enemy)entity).getAggroDist()){
@@ -140,8 +133,8 @@ public class Stats {
 						}
 					}
 				}else{
-					healTimer += (System.currentTimeMillis() - healLast) * delta;
-					healLast = System.currentTimeMillis() * (long)delta;
+					healTimer += (System.currentTimeMillis() - healLast);
+					healLast = System.currentTimeMillis();
 					if(healTimer > 800){
 						if(health < maxHealth){
 							health = Utils.clamp(health + healRate, 0, maxHealth);
@@ -286,7 +279,7 @@ public class Stats {
 	
 	public boolean isLevelUp(){
 		if(level < 40){
-			if(entity.getId() == ID.Player){
+			if(entity.getClass() == Player.class){
 				entity = (Player)entity;
 				if(getMaxExperience() <= experience){
 					return true;
@@ -324,6 +317,43 @@ public class Stats {
 		}
 	}
 	
+	/**
+	 * Damages the character for the amount
+	 * @param amount amount to subtract from player health
+	 */
+	public void damage(float amount){
+		isDamaged = true;
+		if(entity instanceof Enemy){
+			aggro = true;
+		}
+		damageTimer = 0;
+		amount = Utils.clamp(amount, 0F, maxHealth);
+		Color myColor = Color.CYAN;
+		if(entity instanceof Player){
+			myColor = Color.RED;
+		}
+		if(health > 0){
+			health = health - amount;
+			health = Utils.clamp(health, 0, maxHealth);
+			healthScale = health/maxHealth;
+			list.add(new BouncyText(entity.getHandler(), String.valueOf((int)amount), myColor, (int)(entity.getX() + entity.getWidth()/2), (int)(entity.getY() + entity.getHeight()/2)));
+		}else{
+			
+		}
+	}
+
+	public void addEventText(String text){
+		eventList.add(new EventText(entity, entity.getHandler(), text, (int)entity.getX(), (int)entity.getY() - 15));
+	}
+	
+	public void addBuff(BuffTracker buff){
+		buffs.add(buff);
+	}
+	
+	public CopyOnWriteArrayList<BuffTracker> getBuffs(){
+		return buffs;
+	}
+	
 	public int getMaxExperience(){
 		return getLevelExperience(level);
 	}
@@ -347,41 +377,6 @@ public class Stats {
 
 	public void setDmgScale(float dmgScale) {
 		this.dmgScale = dmgScale;
-	}
-
-	/**
-	 * Damages the character for the amount
-	 * @param amount amount to subtract from player health
-	 */
-	public void damage(float amount){
-		isDamaged = true;
-		if(entity instanceof Enemy){
-			aggro = true;
-		}
-		damageTimer = 0;
-		amount = Utils.clamp(amount, 0F, maxHealth);
-		Color myColor = Color.CYAN;
-		if(entity.getId() == ID.Player){
-			myColor = Color.RED;
-		}
-		if(health > 0){
-			health -= amount;
-			health = Utils.clamp(health, 0, maxHealth);
-			healthScale = health/maxHealth;
-			list.add(new BouncyText(entity.getHandler(), String.valueOf((int)amount), myColor, (int)(entity.getX() + entity.getWidth()/2), (int)(entity.getY() + entity.getHeight()/2)));
-		}
-	}
-
-	public void addEventText(String text){
-		eventList.add(new EventText(entity, entity.getHandler(), text, (int)entity.getX(), (int)entity.getY() - 15));
-	}
-	
-	public void addBuff(BuffTracker buff){
-		buffs.add(buff);
-	}
-	
-	public CopyOnWriteArrayList<BuffTracker> getBuffs(){
-		return buffs;
 	}
 	
 	//GETTERS AND SETTERS
@@ -432,7 +427,7 @@ public class Stats {
 	public void setMaxStam(float maxStam) {
 		this.maxStam = maxStam;
 	}
-
+	
 	public Item getMainH() {
 		return mainH;
 	}

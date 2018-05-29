@@ -11,9 +11,10 @@ public enum States {
 	MenuLevelUp,
 	NPCDialog,
 	NPCShop,
-	World,
+	GameState,
 	LaunchMenu,
 	LaunchLoad,
-	LaunchNew;
+	LaunchNew,
+	LoadMap;
 	
 }

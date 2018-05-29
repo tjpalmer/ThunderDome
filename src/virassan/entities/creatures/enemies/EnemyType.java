@@ -2,35 +2,26 @@ package virassan.entities.creatures.enemies;
 
 import java.awt.Rectangle;
 
-public enum EnemyType {
-
-	SOLDIER(3, 0.75f, "Soldier", 32, 32, "_green.png"),
-	CAPTAIN(5, 0.10f, "Captain", 32, 32, "_blue.png"),
-	BOSS(20, 0.045f, "Boss", 32, 32, "_pink.png");
+public class EnemyType {
 	
-	private String name;
 	private int spawnSpacing;
 	private float spawnChance;
 	private int width, height;
 	private Rectangle bounds;
 	private String filepath;
+	private String enemyID;
 	
-	private EnemyType(int spawnSpacing, float spawnChance, String name, int width, int height, String filepath){
+	public EnemyType(String enemyID, int spawnSpacing, float spawnChance, int width, int height, String filepath){
 		this.spawnSpacing = spawnSpacing;
 		this.spawnChance = spawnChance;
 		this.filepath = filepath;
-		this.name= name;
 		this.width = width;
 		this.height = height;
 		bounds = new Rectangle(0,0, width, height);
 	}
 	
-	public String toString(){
-		return name;
-	}
-	
-	public String getName(){
-		return name;
+	public String getEnemyID(){
+		return enemyID;
 	}
 	
 	public int getSpawnSpacing(){
@@ -55,5 +46,9 @@ public enum EnemyType {
 	
 	public Rectangle getBounds(){
 		return bounds;
+	}
+	
+	public String toString(){
+		return enemyID;
 	}
 }

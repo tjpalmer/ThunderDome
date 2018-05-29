@@ -33,8 +33,6 @@ public class LaunchMenu {
 	}
 	
 	public void tick(double delta){
-		//TODO: figure out how to see if there's any JSON files in the "/saves/" folder
-		//Supposed to say "hey if there's a JSON file in the "saves" folder, then ask if they want to Load a Game or Start New
 		if(isSave){
 			boolean saveFile = new File("res\\saves\\testsave2.json").isFile();
 			if(saveFile){
@@ -44,9 +42,12 @@ public class LaunchMenu {
 					isSave = false;
 					
 				}else if(keyInput.space){
-					Utils.loadGame(handler, "res\\saves\\testsave2.json");
+					String filepath = "";
+					File[] files = Utils.fileFinder("res\\saves\\", ".json");
+					filepath = files[files.length - 1].toString();
+					Handler.LAUNCHLOAD.setFilepath(filepath);
 					isSave = false;
-					handler.setState(States.World);
+					handler.setState(States.LaunchLoad);
 				}
 			}else{
 				isSave = false;

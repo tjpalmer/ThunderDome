@@ -7,7 +7,7 @@ import virassan.main.Handler;
 public class LaunchNew {
 
 	public LaunchNew(Handler handler) {
-		// TODO Auto-generated constructor stub
+		// TODO: Start a new game!
 	}
 
 	public void render(Graphics g){

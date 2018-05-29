@@ -27,8 +27,8 @@ public class MenuLevelUp {
 		mouseInput = handler.getMouseInput();
 		keyInput = handler.getKeyInput();
 		traitButtons = new Rectangle[5][2];
-		int x = (Display.WIDTH/2) + 250 - 150 - 40;
-		int y = (Display.WIDTH/2) - 75 - 276;
+		int x = (handler.getWidth() / 2) + 250 - 150 - 40;
+		int y = (handler.getWidth() / 2) - 75 - 276;
 		for(int i = 0; i < traitButtons.length; i++){
 			traitButtons[i][0] = new Rectangle(x, y, 25, 25);
 			traitButtons[i][1] = new Rectangle(x+80, y, 25, 25);
@@ -40,8 +40,8 @@ public class MenuLevelUp {
 		//TODO: finish level up Render
 		g.setColor(Color.GRAY);
 		g.setFont(new Font("Verdana", Font.PLAIN, 18));
-		int h = (Display.HEIGHT/2) - 85;
-		int w = (Display.WIDTH/2) - 150;
+		int h = (handler.getHeight() / 2) - 85;
+		int w = (handler.getWidth() / 2) - 150;
 		g.fillRect(w, h, 400, 170);
 		g.setColor(Color.WHITE);
 		String traits[] = new String[]{"Strength", "Resilience", "Dexterity", "Intelligence", "Charisma"};
@@ -74,11 +74,11 @@ public class MenuLevelUp {
 		if(!mouseInput.getRightClicks().isEmpty()){
 			rightClick();
 		}
-		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
-		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST);
+		HUDManager.MENULAST = System.currentTimeMillis();
 		if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){
 			if(keyInput.T){
-				handler.setState(States.World);
+				handler.setState(States.GameState);
 				handler.getEntityManager().setPaused(false);
 				HUDManager.MENUTIMER = 0;
 			}

@@ -3,7 +3,7 @@
 	[
 		{"SLIME_SOLDIER":
 		[
-			{"name":"Slime", "enemy_type":"SOLDIER", "enemy_species":"SLIME", "level":2,
+			{"name":"Slime", "enemy_id":"S_001", "enemy_species":"SLIME", "level":2,
 				{"drops":
 				[
 					{"item": "APPLE", "rate":98},
@@ -21,7 +21,7 @@
 		{"SLIME_CAPTAIN":[]},
 		{"SLIME_BOSS":
 		[
-			{"name": "Slime Boss", "enemy_type":"BOSS", "enemy_species":"SLIME", "level":10,
+			{"name": "Slime Boss", "enemy_id":"S_002", "enemy_species":"SLIME", "level":10,
 				{"drops":
 				[
 					{"item":"CHERRY", "rate":75},

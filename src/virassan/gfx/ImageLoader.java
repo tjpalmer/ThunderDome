@@ -1,6 +1,8 @@
 package virassan.gfx;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
@@ -18,8 +20,13 @@ public class ImageLoader {
 	 */
 	public static BufferedImage loadImage(String filepath){
 		try {
-			return ImageIO.read(ImageLoader.class.getResource(filepath)); //returns the buffered image
+			BufferedImage original = ImageIO.read(ImageLoader.class.getResource(filepath));
+			return original; //returns the buffered image
+		}catch(FileNotFoundException f){
+			System.out.println("Error Message: ImageLoader_loadImage FILE NOT FOUND: " + filepath);
+			f.printStackTrace();
 		} catch (IOException e) {
+			System.out.println("Error Message: ImageLoader_loadImage IOException filepath: " + filepath);
 			e.printStackTrace();
 			System.exit(1);
 		}

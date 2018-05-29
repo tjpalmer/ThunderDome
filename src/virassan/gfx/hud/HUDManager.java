@@ -3,6 +3,7 @@ package virassan.gfx.hud;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -37,6 +38,8 @@ public class HUDManager {
 	private long timer = 0;
 	private boolean isDragged;
 	
+	private final Rectangle exitButton;
+	
 	private float dmgScaleIncr = 0.01f;
 	
 	public static long MENUTIMER, MENULAST;
@@ -47,6 +50,7 @@ public class HUDManager {
 		keyInput = handler.getKeyInput();
 		mouseInput = handler.getMouseInput();
 		itemManager = new ItemManager(handler);
+		exitButton = new Rectangle(handler.getWidth() - 55, 70, 25, 25);
 	}
 
 	
@@ -54,7 +58,7 @@ public class HUDManager {
 		player = handler.getPlayer();
 		boolean pause = handler.getEntityManager().getPaused();
 		if(!pause){
-			itemManager.tick();
+			itemManager.tick(delta);
 			if(keyInput.Z){
 				Utils.saveGame(handler);
 			}
@@ -74,13 +78,14 @@ public class HUDManager {
 		}
 		for(SkillText text : skillList){
 			if(text.isLive()){
-				text.tick();
+				text.tick(delta);
 			}else{
 				skillList.remove(text);
 			}
 		}
 		player.getStats().tick(delta);
-		
+		leftClick();
+		rightClick();
 	}
 	
 	public void render(Graphics g){
@@ -94,6 +99,7 @@ public class HUDManager {
 				}
 			}
 		}
+		renderExitButton(g);
 		renderSkillBar(g);
 		renderHealthBar(g);
 		renderStaminaBar(g);
@@ -115,19 +121,27 @@ public class HUDManager {
 		}
 		g.setFont(new Font("Verdana", Font.PLAIN, 12));
 		g.setColor(Color.WHITE);
-		g.drawString("Ticks: " + Game.TICK, Display.WIDTH - 70, 20);
-		g.drawString(handler.getPlayer().getX() + " " + handler.getPlayer().getY(), Display.WIDTH - 90, 35);
-		g.drawString("" + handler.getEntityManager().getPaused(), Display.WIDTH - 50, 50);
-		g.drawString(handler.getGameCamera().getxOffset() + " " + handler.getGameCamera().getyOffset(), Display.WIDTH - 90, 65);
+		g.drawString("Ticks: " + Game.TICK, handler.getWidth() - 70, 20);
+		g.drawString(handler.getPlayer().getX() + " " + handler.getPlayer().getY(), handler.getWidth() - 90, 35);
+		g.drawString("" + handler.getEntityManager().getPaused(), handler.getWidth() - 50, 50);
+		g.drawString(handler.getGameCamera().getxOffset() + " " + handler.getGameCamera().getyOffset(), handler.getWidth() - 90, 65);
+	}
+	
+	public void renderExitButton(Graphics g){
+		g.setColor(Color.BLACK);
+		g.setFont(new Font("Verdana", Font.PLAIN, 20));
+		g.drawString("X", handler.getWidth() - 50, 90);
+		g.setColor(Color.RED);
+		g.drawRect(exitButton.x, exitButton.y, exitButton.width, exitButton.height);
 	}
 	
 	public void renderSkillBar(Graphics g){
 		g.setColor(Color.GRAY);
-		int rectx = (Display.WIDTH/2) - 80;
+		int rectx = (handler.getWidth() / 2) - 80;
 		int recty = 10;
-		g.fillRect((Display.WIDTH/2) - 80, 10, 320, 64);
-		int tempx = (Display.WIDTH/2) - 80;
-		int numx = (Display.WIDTH/2) - 60;
+		g.fillRect((handler.getWidth() / 2) - 80, 10, 320, 64);
+		int tempx = (handler.getWidth() / 2) - 80;
+		int numx = (handler.getWidth() / 2) - 60;
 		for(SkillTracker s : handler.getPlayer().getSkillBar()){
 			if(s != null){
 				s.drawIcon(g, tempx, recty);
@@ -159,7 +173,6 @@ public class HUDManager {
 		g.drawRect(69, 79, 30, 16);
 		g.drawRect(99, 79, 30, 16);
 		g.drawRect(129, 79, 30, 16);
-		//TODO: Draw the bar showing where it's at rn
 		g.setColor(Handler.BARELY_GRAY);
 		g.setFont(new Font("Consolas", Font.BOLD, 14));
 		String expDisplay = playerExp + " / " + (maxExp - exp);
@@ -246,14 +259,24 @@ public class HUDManager {
 	}
 	
 	public void leftClick(){
-		
+		LinkedQueue clicks = mouseInput.getLeftClicks();
+		if(clicks.element() != null){
+			while(clicks.element() != null){
+				Point head = clicks.poll().getObject();
+				double x = head.getX();
+				double y = head.getY();
+				if(exitButton.intersects(x, y, 1, 1)){
+					handler.getGame().close();
+				}
+			}
+		}
 	}
 	
 	public void rightClick(){
-		// TODO : add right click actions!
+		// TODO : add right click actions?
 		LinkedQueue clicks = mouseInput.getRightClicks();
 		if(handler.getEntityManager().getPaused()){
-
+			
 		}
 	}
 	
@@ -283,7 +306,6 @@ public class HUDManager {
 		if(handler.getEntityManager().getPaused()){
 			
 		}else{
-			//TODO: hover over skillbar
 			if(player.getSkillBar() != null){
 				outer: {
 					for(SkillTracker skill : player.getSkillBar()){

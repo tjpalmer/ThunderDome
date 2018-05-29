@@ -1,6 +1,7 @@
 package virassan.world.maps;
 
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 import virassan.gfx.Assets;
@@ -16,7 +17,7 @@ public class Tile {
 	public static Tile[] tiles = new Tile[256];
 	public static final int TILE_WIDTH = 64, 
 							TILE_HEIGHT = 64;
-	protected BufferedImage texture;
+	protected Image texture;
 	protected final int idNum;
 	
 	private int width, height;
@@ -29,8 +30,7 @@ public class Tile {
 	 * @param idNum Desired ID Number
 	 * @param isSolid true if solid, false if not solid
 	 */
-	public Tile(BufferedImage texture, int idNum, boolean isSolid) {
-		// TODO Auto-generated constructor stub
+	public Tile(Image texture, int idNum, boolean isSolid) {
 		this.texture = texture;
 		this.idNum = idNum;
 		this.isSolid = isSolid;
@@ -48,7 +48,6 @@ public class Tile {
 	 * @param collisionDmg amount of damage done per second when player intersects
 	 */
 	public Tile(BufferedImage texture, int idNum, boolean isSolid, float collisionDmg) {
-		// TODO Auto-generated constructor stub
 		this.texture = texture;
 		this.idNum = idNum;
 		this.isSolid = isSolid;
@@ -77,19 +76,8 @@ public class Tile {
 	
 	
 	public void render(Graphics g, int x, int y) {
-		// TODO Auto-generated method stub
 		g.drawImage(texture, x, y, TILE_WIDTH, TILE_HEIGHT, null);
-		//System.out.println("Texture is: " + texture);
 	}
-	
-	/**
-	 * Initializes Tiles //TODO: where do I wanna call this method? Prob in map?
-	 */
-	public static void init(){
-		grass = new Tile(Assets.grass, 0, false);
-		water = new Tile(Assets.water, 1, true);
-	}
-	
 	
 	// GETTERS AND SETTERS
 	public boolean isSolid(){

@@ -37,26 +37,20 @@
 			{"skill":"CHOP","index":3},
 			{"skill":"","index":4}
 		]},
-		{"active_quests":[
-			{"quest":"QUEST_2"},
-			{"reqs":[
-				{"amt":0,"req":"SLIME"}
-			]},
-			{"quest":"QUEST_3"},
-			{"reqs":[
-				{"amt":2,"req":"TOAST"},
-				{"amt":0,"req":"CAPTAIN"}
-			]}
+		{"quests":[
+			{"quest_id":"A_001","quest_bool":false}
 		]},
-		{"completed_quests":[]},
 		{"buffs":[]},
 		{"skills":[
 			{"skill":"STAB"},
 			{"skill":"SLASH"},
 			{"skill":"HEAL_1"},
 			{"skill":"CHOP"}
+		]},
+		{"npcs":[
+			{"id":"A_001","met":true,"liked":true}
 		]}
 	],
 	"player_level":1,
-	"map":"res\/worlds\/maps\/hajime_village.json"
+	"map":"haj_vi_01"
 }

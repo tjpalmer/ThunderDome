@@ -63,13 +63,13 @@ public class MenuSkills {
 			rightClick();
 		}
 		hover();
-		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
-		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST);
+		HUDManager.MENULAST = System.currentTimeMillis();
 		if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){
 			if(keyInput.K || keyInput.I || keyInput.L || keyInput.esc){
 				HUDManager.MENUTIMER = 0;
 				if(keyInput.K){
-					handler.setState(States.World);
+					handler.setState(States.GameState);
 					handler.getEntityManager().setPaused(false);
 				}else if(keyInput.I){
 					handler.setState(States.MenuInventory);

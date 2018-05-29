@@ -2,6 +2,7 @@ package virassan.gfx;
 
 import java.awt.image.BufferedImage;
 
+import virassan.world.maps.Map;
 import virassan.world.maps.Tile;
 
 /**
@@ -15,7 +16,14 @@ public class Assets {
 	public static final int IMAGE_WIDTH = 32, IMAGE_HEIGHT = 32;
 	public static final int ITEM_WIDTH = 16, ITEM_HEIGHT = 16;
 	
-	private BufferedImage front_1, front_Up, front_3, left_1, left_Up, left_3, right_1, right_Up, right_3, back_1, back_Up, back_3;
+	private BufferedImage front_1, front_Up, front_3, 
+		left_1, left_Up, left_3, 
+		right_1, right_Up, right_3, 
+		back_1, back_Up, back_3,
+		fleft_1, fleft_Up, fleft_3,
+		fright_1, fright_Up, fright_3,
+		bleft_1, bleft_Up, bleft_3,
+		bright_1, bright_Up, bright_3;
 	public static BufferedImage lava, water, idk, grass, flowers_1, flowers_2, stone_rock, animeDudeStanding, button_blue, button_green, button_pink, button_red;
 	
 	
@@ -72,7 +80,11 @@ public class Assets {
 	private BufferedImage[] walkingLeft, 
 			walkingRight, 
 			walkingUp, 
+			walkingUpLeft,
+			walkingUpRight,
 			walkingDown, 
+			walkingDownLeft,
+			walkingDownRight,
 			standing;
 	
 	/**
@@ -105,7 +117,8 @@ public class Assets {
 		questMenu = ImageLoader.loadImage("/textures/gui/menus/questlog.png");
 		skillMenu = ImageLoader.loadImage("/textures/gui/menus/skillbook.png");
 		invItemInfo = ImageLoader.loadImage("/textures/gui/menus/itemInfoBox.png");
-		//TODO : create scroll up and down buttons
+		
+		
 		scrollButtonUp = ImageLoader.loadImage("/textures/gui/menus/scrollButtonUp.png");
 		scrollButtonDown = ImageLoader.loadImage("/textures/gui/menus/scrollButtonDown.png");
 		
@@ -128,18 +141,17 @@ public class Assets {
 		
 		animeDudeStanding = animeDude.sprite(32, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
 		
-		//TODO: Load Assets from new texture SpriteSheet
+		
 		//lava = testing.sprite(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
 		grass = testing.sprite(0, 0, Tile.TILE_WIDTH, Tile.TILE_WIDTH);
 		water = testing.sprite(Tile.TILE_WIDTH, 0, Tile.TILE_WIDTH, Tile.TILE_WIDTH);
-		
 		
 		flowers_1 = testing.sprite(Tile.TILE_WIDTH * 3, 0, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
 		flowers_2 = testing.sprite(Tile.TILE_WIDTH * 4, 0, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
 		stone_rock = testing.sprite(Tile.TILE_WIDTH * 2, 0, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
 	
 		// TILES BRO
-		Tile.init();
+		Map.init();
 		
 		// ITEMS YO
 		apple = food.sprite(0, 0, ITEM_WIDTH, ITEM_HEIGHT);
@@ -192,11 +204,27 @@ public class Assets {
 		back_1 = sheet.sprite(0, height*3, width, height);
 		back_Up = sheet.sprite(width, height*3, width, height);
 		back_3 = sheet.sprite(width*2, height*3, width, height);
+		fleft_1 = sheet.sprite(width*3, 0, width, height);
+		fleft_Up = sheet.sprite(width*4, 0, width, height);
+		fleft_3 = sheet.sprite(width*5, 0, width, height);
+		bleft_1 = sheet.sprite(width*3, height, width, height);
+		bleft_Up = sheet.sprite(width*4, height, width, height);
+		bleft_3 = sheet.sprite(width*5, height, width, height);
+		fright_1 = sheet.sprite(width*3, height*2, width, height);
+		fright_Up = sheet.sprite(width*4, height*2, width, height);
+		fright_3 = sheet.sprite(width*5, height*2, width, height);
+		bright_1 = sheet.sprite(width*3, height*3, width, height);
+		bright_Up = sheet.sprite(width*4, height*3, width, height);
+		bright_3 = sheet.sprite(width*5, height*3, width, height);
 		
 		walkingLeft = new BufferedImage[3];
 		walkingRight = new BufferedImage[3];
 		walkingUp = new BufferedImage[3];
+		walkingUpRight = new BufferedImage[3];
+		walkingUpLeft = new BufferedImage[3];
 		walkingDown = new BufferedImage[3];
+		walkingDownRight = new BufferedImage[3];
+		walkingDownLeft = new BufferedImage[3];
 		standing = new BufferedImage[1];
 		
 		walkingLeft[0] = left_1;
@@ -208,9 +236,21 @@ public class Assets {
 		walkingUp[0] = back_1;
 		walkingUp[1] = back_Up;
 		walkingUp[2] = back_3;
+		walkingUpRight[0] = bright_1;
+		walkingUpRight[1] = bright_Up;
+		walkingUpRight[2] = bright_3;
+		walkingUpLeft[0] = bleft_1;
+		walkingUpLeft[1] = bleft_Up;
+		walkingUpLeft[2] = bleft_3;
 		walkingDown[0] = front_1;
 		walkingDown[1] = front_Up;
 		walkingDown[2] = front_3;
+		walkingDownRight[0] = fright_1;
+		walkingDownRight[1] = fright_Up;
+		walkingDownRight[2] = fright_3;
+		walkingDownLeft[0] = fleft_1;
+		walkingDownLeft[1] = fleft_Up;
+		walkingDownLeft[2] = fleft_3;
 		standing[0] = front_1;
 	}
 	
@@ -258,175 +298,272 @@ public class Assets {
 	}
 
 
-// GETTERS AND SETTERS
+	// GETTERS AND SETTERS
+		
 	
 	public BufferedImage getFront_1() {
 		return front_1;
 	}
 
-
 	public void setFront_1(BufferedImage front_1) {
 		this.front_1 = front_1;
 	}
-
 
 	public BufferedImage getFront_Up() {
 		return front_Up;
 	}
 
-
 	public void setFront_Up(BufferedImage front_Up) {
 		this.front_Up = front_Up;
 	}
-
 
 	public BufferedImage getFront_3() {
 		return front_3;
 	}
 
-
 	public void setFront_3(BufferedImage front_3) {
 		this.front_3 = front_3;
 	}
-
 
 	public BufferedImage getLeft_1() {
 		return left_1;
 	}
 
-
 	public void setLeft_1(BufferedImage left_1) {
 		this.left_1 = left_1;
 	}
-
 
 	public BufferedImage getLeft_Up() {
 		return left_Up;
 	}
 
-
 	public void setLeft_Up(BufferedImage left_Up) {
 		this.left_Up = left_Up;
 	}
-
 
 	public BufferedImage getLeft_3() {
 		return left_3;
 	}
 
-
 	public void setLeft_3(BufferedImage left_3) {
 		this.left_3 = left_3;
 	}
-
 
 	public BufferedImage getRight_1() {
 		return right_1;
 	}
 
-
 	public void setRight_1(BufferedImage right_1) {
 		this.right_1 = right_1;
 	}
-
 
 	public BufferedImage getRight_Up() {
 		return right_Up;
 	}
 
-
 	public void setRight_Up(BufferedImage right_Up) {
 		this.right_Up = right_Up;
 	}
-
 
 	public BufferedImage getRight_3() {
 		return right_3;
 	}
 
-
 	public void setRight_3(BufferedImage right_3) {
 		this.right_3 = right_3;
 	}
-
 
 	public BufferedImage getBack_1() {
 		return back_1;
 	}
 
-
 	public void setBack_1(BufferedImage back_1) {
 		this.back_1 = back_1;
 	}
-
 
 	public BufferedImage getBack_Up() {
 		return back_Up;
 	}
 
-
 	public void setBack_Up(BufferedImage back_Up) {
 		this.back_Up = back_Up;
 	}
-
 
 	public BufferedImage getBack_3() {
 		return back_3;
 	}
 
-
 	public void setBack_3(BufferedImage back_3) {
 		this.back_3 = back_3;
 	}
 
+	public BufferedImage getFleft_1() {
+		return fleft_1;
+	}
+
+	public void setFleft_1(BufferedImage fleft_1) {
+		this.fleft_1 = fleft_1;
+	}
+
+	public BufferedImage getFleft_Up() {
+		return fleft_Up;
+	}
+
+	public void setFleft_Up(BufferedImage fleft_Up) {
+		this.fleft_Up = fleft_Up;
+	}
+
+	public BufferedImage getFleft_3() {
+		return fleft_3;
+	}
+
+	public void setFleft_3(BufferedImage fleft_3) {
+		this.fleft_3 = fleft_3;
+	}
+
+	public BufferedImage getFright_1() {
+		return fright_1;
+	}
+
+	public void setFright_1(BufferedImage fright_1) {
+		this.fright_1 = fright_1;
+	}
+
+	public BufferedImage getFright_Up() {
+		return fright_Up;
+	}
+
+	public void setFright_Up(BufferedImage fright_Up) {
+		this.fright_Up = fright_Up;
+	}
+
+	public BufferedImage getFright_3() {
+		return fright_3;
+	}
+
+	public void setFright_3(BufferedImage fright_3) {
+		this.fright_3 = fright_3;
+	}
+
+	public BufferedImage getBleft_1() {
+		return bleft_1;
+	}
+
+	public void setBleft_1(BufferedImage bleft_1) {
+		this.bleft_1 = bleft_1;
+	}
+
+	public BufferedImage getBleft_Up() {
+		return bleft_Up;
+	}
+
+	public void setBleft_Up(BufferedImage bleft_Up) {
+		this.bleft_Up = bleft_Up;
+	}
+
+	public BufferedImage getBleft_3() {
+		return bleft_3;
+	}
+
+	public void setBleft_3(BufferedImage bleft_3) {
+		this.bleft_3 = bleft_3;
+	}
+
+	public BufferedImage getBright_1() {
+		return bright_1;
+	}
+
+	public void setBright_1(BufferedImage bright_1) {
+		this.bright_1 = bright_1;
+	}
+
+	public BufferedImage getBright_Up() {
+		return bright_Up;
+	}
+
+	public void setBright_Up(BufferedImage bright_Up) {
+		this.bright_Up = bright_Up;
+	}
+
+	public BufferedImage getBright_3() {
+		return bright_3;
+	}
+
+	public void setBright_3(BufferedImage bright_3) {
+		this.bright_3 = bright_3;
+	}
 
 	public BufferedImage[] getWalkingLeft() {
 		return walkingLeft;
 	}
 
-
 	public void setWalkingLeft(BufferedImage[] walkingLeft) {
 		this.walkingLeft = walkingLeft;
 	}
-
 
 	public BufferedImage[] getWalkingRight() {
 		return walkingRight;
 	}
 
-
 	public void setWalkingRight(BufferedImage[] walkingRight) {
 		this.walkingRight = walkingRight;
 	}
-
 
 	public BufferedImage[] getWalkingUp() {
 		return walkingUp;
 	}
 
-
 	public void setWalkingUp(BufferedImage[] walkingUp) {
 		this.walkingUp = walkingUp;
 	}
 
+	public BufferedImage[] getWalkingUpLeft() {
+		return walkingUpLeft;
+	}
+
+	public void setWalkingUpLeft(BufferedImage[] walkingUpLeft) {
+		this.walkingUpLeft = walkingUpLeft;
+	}
+
+	public BufferedImage[] getWalkingUpRight() {
+		return walkingUpRight;
+	}
+
+	public void setWalkingUpRight(BufferedImage[] walkingUpRight) {
+		this.walkingUpRight = walkingUpRight;
+	}
 
 	public BufferedImage[] getWalkingDown() {
 		return walkingDown;
 	}
 
-
 	public void setWalkingDown(BufferedImage[] walkingDown) {
 		this.walkingDown = walkingDown;
 	}
 
+	public BufferedImage[] getWalkingDownLeft() {
+		return walkingDownLeft;
+	}
+
+	public void setWalkingDownLeft(BufferedImage[] walkingDownLeft) {
+		this.walkingDownLeft = walkingDownLeft;
+	}
+
+	public BufferedImage[] getWalkingDownRight() {
+		return walkingDownRight;
+	}
+
+	public void setWalkingDownRight(BufferedImage[] walkingDownRight) {
+		this.walkingDownRight = walkingDownRight;
+	}
 
 	public BufferedImage[] getStanding() {
 		return standing;
 	}
 
-
 	public void setStanding(BufferedImage[] standing) {
 		this.standing = standing;
 	}
-	
+
 }
+	

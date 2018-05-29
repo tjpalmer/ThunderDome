@@ -42,36 +42,37 @@ public class BouncyText {
 	
 	
 	public void tick(double delta){
-		if(lifeTime > 0){
-			lifeTime -= 0.01f*delta;
+		if(!handler.getEntityManager().getPaused()){
+			if(lifeTime > 0){
+				lifeTime -= 0.01f;
+			}
+			if(lifeTime <= 0){
+				live = false;
+			}
+			if(jump){
+				if(currentUp != maxUp){
+					currentUp += 0.2f;
+				}
+				if(currentUp >= maxUp){
+					jump = false;
+				}
+				if(right){
+					x += (currentUp * new Random().nextFloat() * maxUp * 2);
+				}
+				if(left){
+					x -= (currentUp * new Random().nextFloat() * maxUp * 2);
+				}
+			}else{
+				if(currentUp != 0){
+					currentUp -= 0.1f;
+					y += currentUp;
+				}
+				if(currentUp <= 0){
+					maxUp -= 0.2f;
+					jump = true;
+				}
+			}
 		}
-		if(lifeTime <= 0){
-			live = false;
-		}
-		if(jump){
-			if(currentUp != maxUp){
-				currentUp += 0.2f;
-			}
-			if(currentUp >= maxUp){
-				jump = false;
-			}
-			if(right){
-				x += currentUp * new Random().nextFloat() * maxUp * 2;
-			}
-			if(left){
-				x -= currentUp * new Random().nextFloat() * maxUp * 2;
-			}
-		}else{
-			if(currentUp != 0){
-				currentUp -= 0.1f;
-				y += currentUp;
-			}
-			if(currentUp <= 0){
-				maxUp -= 0.2f;
-				jump = true;
-			}
-		}
-		
 	}
 	
 	public void render(Graphics g){

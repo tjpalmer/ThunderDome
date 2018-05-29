@@ -138,12 +138,12 @@ public class NPCShop {
 		if(curIndex >  itemIndex && curIndex != 0){
 			mercCurY = mercY[itemIndex];
 		}
-		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
-		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST);
+		HUDManager.MENULAST = System.currentTimeMillis();
 		if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){
 			if(keyInput.F){
 				HUDManager.MENUTIMER = 0;
-				handler.setState(States.World);
+				handler.setState(States.GameState);
 				handler.getEntityManager().setPaused(false);
 			}
 			if(keyInput.W){

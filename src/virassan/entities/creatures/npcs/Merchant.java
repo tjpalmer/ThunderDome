@@ -3,6 +3,7 @@ package virassan.entities.creatures.npcs;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -12,7 +13,6 @@ import virassan.entities.creatures.Creature;
 import virassan.gfx.ImageLoader;
 import virassan.items.Item;
 import virassan.main.Handler;
-import virassan.main.ID;
 
 public class Merchant extends Creature{
 
@@ -21,12 +21,14 @@ public class Merchant extends Creature{
 	private ArrayList<Item> curList;
 	private ArrayList<Item> sellList, buyList;
 	private BufferedImage image;
+	private final String npcID;
 	private int interactDist;
 	private boolean isInteract;
 	
-	public Merchant(Handler handler, String name, float x, float y, int width, int height, String filepath) {
+	public Merchant(Handler handler, String npcID, String name, float x, float y, int width, int height, String filepath) {
 		// TODO Add portrait!
-		super(handler, name, x, y, width, height, 1, ID.NPC);
+		super(handler, name, x, y, width, height, 1);
+		this.npcID = npcID;
 		image = ImageLoader.loadImage(filepath);
 		interactDist = (int)(Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2)));
 		bounds.x += 22;
@@ -54,8 +56,8 @@ public class Merchant extends Creature{
 		curList = buyList;
 	}
 
-	public Merchant(Handler handler, String name, float x, float y, int width, int height, String filepath, HashMap<Item, Integer> buyItems){
-		this(handler, name, x, y, width, height, filepath);
+	public Merchant(Handler handler, String npcID, String name, float x, float y, int width, int height, String filepath, HashMap<Item, Integer> buyItems){
+		this(handler, npcID, name, x, y, width, height, filepath);
 		this.buyItems = buyItems;
 		for(Item item : buyItems.keySet()){
 			buyList.add(item);
@@ -64,9 +66,7 @@ public class Merchant extends Creature{
 	}
 	
 	@Override
-	public void resetTimer() {
-		// TODO Auto-generated method stub
-		
+	public void resetTimer() {	
 	}
 
 	@Override
@@ -99,13 +99,16 @@ public class Merchant extends Creature{
 
 	@Override
 	public void render(Graphics g) {
+		float xrel = vector.normalize().dX ;//* handler.getGameCamera().getWidth();
+		float yrel = vector.normalize().dY ;//* handler.getGameCamera().getHeight();
+		
 		g.setFont(new Font("Verdana", Font.PLAIN, 12));
-		g.drawImage(image, (int)(x-handler.getGameCamera().getxOffset()), (int)(y-handler.getGameCamera().getyOffset()), null);
+		g.drawImage(image, (int)(xrel - handler.getGameCamera().getxOffset()), (int)(yrel - handler.getGameCamera().getyOffset()), null);
 		g.setColor(Color.WHITE);
-		g.drawString(name, (int)(x-handler.getGameCamera().getxOffset()+2), (int)(y-handler.getGameCamera().getyOffset()-5));
-		int temp = (int)(Math.sqrt(Math.pow(x-handler.getPlayer().getX(), 2)+Math.pow(y-handler.getPlayer().getY(),2)));
+		g.drawString(name, (int)(xrel - handler.getGameCamera().getxOffset() + 2), (int)(yrel - handler.getGameCamera().getyOffset() - 5));
+		int temp = (int)(Math.sqrt(Math.pow(xrel - handler.getPlayer().getX(), 2) + Math.pow(yrel - handler.getPlayer().getY(), 2)));
 		if(temp <= interactDist){
-			g.drawString("F", (int)(x-handler.getGameCamera().getxOffset()+(width/2)-5), (int)(y-handler.getGameCamera().getyOffset()+height+10));
+			g.drawString("F", (int)(xrel - handler.getGameCamera().getxOffset() + (width / 2) - 5), (int)(yrel - handler.getGameCamera().getyOffset() + height + 10));
 		}
 	}
 
@@ -126,13 +129,11 @@ public class Merchant extends Creature{
 	}
 	
 	@Override
-	public void unPause() {
-		// TODO Auto-generated method stub
-		
+	public void unPause() {	
 	}
 
 	// GETTERS AND SETTERS
-	public BufferedImage getImage() {
+	public Image getImage() {
 		return image;
 	}
 
@@ -176,7 +177,16 @@ public class Merchant extends Creature{
 		return buyItems;
 	}
 	
+	public String getNpcID(){
+		return npcID;
+	}
+	
 	public String toString(){
 		return name;
+	}
+
+	@Override
+	public Class findClass() {
+		return getClass().getSuperclass();
 	}
 }

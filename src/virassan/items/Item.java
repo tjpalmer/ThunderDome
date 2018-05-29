@@ -1,5 +1,6 @@
 package virassan.items;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,6 +12,7 @@ public enum Item{
 	// ORDER by Alphabet!
 	// A
 	APPLE("Apple", ItemType.FOOD, 0, "A tasty red apple!", 10, "rHealth", 10, Assets.apple),
+	APPLE_PIE("Apple Pie", ItemType.FOOD, 0, "Delicious apple pie", 25, "rHealth", 10, Assets.apple),
 	
 	// B
 	BANDAID("Bandaid", ItemType.JUNK, 0, "Ew, a used bandaid.", 5, Assets.bandaid),
@@ -204,6 +206,15 @@ public enum Item{
 	
 	public BufferedImage getImage() {
 		return image;
+	}
+	
+	public int getWidth(){
+		return image.getWidth();
+	}
+	
+	//FIXME: how to get height of Image?
+	public int getHeight(){
+		return image.getHeight();
 	}
 	
 	public int getPrice(){

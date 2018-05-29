@@ -1,39 +1,12 @@
 package virassan.world.maps;
 
 import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
 
-import org.json.simple.*;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
-import virassan.entities.Entity;
 import virassan.entities.EntityManager;
-import virassan.entities.creatures.Attack;
-import virassan.entities.creatures.enemies.EnemySpecies;
-import virassan.entities.creatures.enemies.EnemyType;
-import virassan.entities.creatures.enemies.Soldier;
-import virassan.entities.creatures.npcs.Merchant;
-import virassan.entities.creatures.npcs.NPC;
-import virassan.entities.statics.Statics;
 import virassan.gfx.Assets;
-import virassan.gfx.ImageLoader;
-import virassan.gfx.SpriteSheet;
-import virassan.items.Drop;
-import virassan.items.Item;
+import virassan.main.Display;
 import virassan.main.Handler;
-import virassan.main.ID;
-import virassan.main.Vector2F;
-import virassan.quests.Quest;
+import virassan.utils.Vector2F;
 
 
 /**
@@ -43,9 +16,12 @@ import virassan.quests.Quest;
  */
 public class Map{
 	
+	public static Tile grass, water;
+	
+	private Handler handler;
 	private String filepath;
 	private String mapName;
-	private Handler handler;
+	private String mapID;
 	private EntityManager entityManager;
 	
 	private int width, height, spawn_x, spawn_y;
@@ -57,324 +33,37 @@ public class Map{
 	 * @param handler Pass the game's Handler through
 	 * @param filepath Filepath of the map JSON
 	 */
-	public Map(Handler handler, String filepath) {
-		this.filepath = filepath;
+	public Map(Handler handler, String filepath, String mapName, String mapID, int height, int width, int spawn_x, int spawn_y, int[][] worldTiles) {
 		this.handler = handler;
+		this.filepath = filepath;
+		this.mapName = mapName;
+		this.mapID = mapID;
+		this.height = height;
+		this.width = width;
+		this.spawn_x = spawn_x;
+		this.spawn_y = spawn_y;
+		this.worldTiles = worldTiles;
 		entityManager = new EntityManager(handler);
+		if(handler.getPlayer() == null)
+			System.out.println("Error Message: Map_MapConstructor Player in Handler is null.");
 		entityManager.setPlayer(handler.getPlayer());
 	}
 	
 	public void render(Graphics g){
+		int xStart = (int)Math.max(0, handler.getGameCamera().getxOffset() / Tile.TILE_WIDTH);
+		int xEnd = (int)Math.min(getWidth(), (handler.getGameCamera().getxOffset() + handler.getWidth())/ Tile.TILE_WIDTH + 3);
+		int yStart = (int)Math.max(0, handler.getGameCamera().getyOffset() / Tile.TILE_HEIGHT);
+		int yEnd = (int)Math.min(getHeight(), (handler.getGameCamera().getyOffset() + handler.getHeight())/ Tile.TILE_HEIGHT + 3);
+		for(int y = yStart; y < yEnd; y++){
+			for(int x = xStart; x < xEnd; x++){
+				getTile(x, y).render(g, (int) (x*Tile.TILE_WIDTH - handler.getGameCamera().getxOffset()), (int) (y*Tile.TILE_HEIGHT - handler.getGameCamera().getyOffset()));
+			}
+		}
 		entityManager.render(g);
 	}
 
 	public void tick(double delta){
 		entityManager.tick(delta);
-	}
-	
-	/**
-	 * Loads the Map information from a JSON file
-	 * @param filepath
-	 */
-	public void loadMap(String filepath){
-		if(filepath.equals(this.filepath)){
-			Random gen = new Random(37274);
-			JSONObject jsonObject;
-			String name, npc_json;
-			long width, height, spawn_x, spawn_y, base_tile;
-			try{
-				jsonObject = (JSONObject)JSONValue.parse(new FileReader(filepath));
-				System.out.println(filepath);
-				name = (String)jsonObject.get("name");
-				npc_json = (String)jsonObject.get("npc_json");
-				base_tile = (Long)jsonObject.get("base_tile");
-				width = (Long)jsonObject.get("width");
-				height = (Long)jsonObject.get("height");
-				spawn_x = (Long)jsonObject.get("spawn_x");
-				spawn_y = (Long)jsonObject.get("spawn_y");
-				handler.getPlayer().setX(spawn_x);
-				handler.getPlayer().setY(spawn_y);
-				this.height = (int)height;
-				this.width = (int)width;
-				JSONArray arrays = (JSONArray)jsonObject.get("arrays");
-				worldTiles = new int[(int)height][(int)width];
-				for(int i = 0; i < arrays.size(); i++){
-					switch(i){
-					case 0: // warp portals
-						JSONObject warpObj = (JSONObject)arrays.get(i);
-						JSONArray warpArray = (JSONArray)warpObj.get("warp_portal");
-						for(Object o : warpArray){
-							long x, y, tempX, tempY;
-							String mapfile = (String)((JSONObject)o).get("map_json");
-							x = (Long)((JSONObject)o).get("x");
-							y = (Long)((JSONObject)o).get("y");
-							tempX = (Long)((JSONObject)o).get("spawn_x");
-							tempY = (Long)((JSONObject)o).get("spawn_y");
-							try{
-								entityManager.addStatic(new Statics(handler, (int)x, (int)y, 64, 64, "warp_portal", mapfile, (int)tempX, (int)tempY, Assets.warp_portal_images, false));
-							}catch(NullPointerException e){
-								e.printStackTrace();
-								System.out.println("Something is null! - mapfile = " + mapfile + ", x= " + x + ", y= " + y + ", tempX= " + tempX + ", tempY= " + tempY);
-							}
-						}
-						break;
-					case 1: // statics
-						JSONObject staticObj = (JSONObject)arrays.get(i);
-						JSONArray staticArray = (JSONArray)staticObj.get("statics");
-						for(Object o : staticArray){
-							String type = (String)((JSONObject)o).get("type");
-							switch(type){
-							case "tile":
-								long idnum = (Long)((JSONObject)o).get("IDnum");
-								JSONArray cords = (JSONArray)((JSONObject)o).get("cords");
-								for(Object num : cords){
-									JSONObject cordObj = (JSONObject)num;
-									long x = (Long)cordObj.get("x");
-									long y = (Long)cordObj.get("y");
-									try{
-										worldTiles[(int)x][(int)y] = (int)idnum;
-									}catch(NullPointerException e){
-										e.printStackTrace();
-										System.out.println("One of these static json objects are null");
-									}
-								}
-								break;
-							case "static":
-								String imagefile = (String)((JSONObject)o).get("spritesheet");
-								int image_x = (int)((long)(Long)((JSONObject)o).get("x"));
-								int image_y = (int)((long)(Long)((JSONObject)o).get("y"));
-								int image_width = (int)((long)(Long)((JSONObject)o).get("width"));
-								int image_height = (int)((long)(Long)((JSONObject)o).get("height"));
-								JSONArray static_cords = (JSONArray)((JSONObject)o).get("cords");
-								for(Object num : static_cords){
-									JSONObject cordObj = (JSONObject)num;
-									long x = (Long)cordObj.get("x");
-									long y = (Long)cordObj.get("y");
-									try{
-										SpriteSheet temp = new SpriteSheet(ImageLoader.loadImage(imagefile));
-										BufferedImage image = temp.sprite(image_x, image_y, image_width, image_height);
-										entityManager.addEntity(new Statics(handler, (float)x, (float)y, image));
-									}catch(NullPointerException e){
-										e.printStackTrace();
-										System.out.println("One of the static type json objects is null");
-									}
-								}
-								break;
-							}
-						}
-						break;
-					case 2: // monsters
-						//TODO: Later add Skills and Such
-						JSONObject monsterObj = (JSONObject)arrays.get(i);
-						JSONArray monsterArray = (JSONArray)monsterObj.get("monsters");
-						for(Object o : monsterArray){
-							String mon_name = (String)((JSONObject)o).get("name");
-							int mon_width = (int)(long)((Long)((JSONObject)o).get("width"));
-							int mon_height = (int)(long)((Long)((JSONObject)o).get("height"));
-							String enemy_type = (String)((JSONObject)o).get("enemy_type");
-							String enemy_species = (String)((JSONObject)o).get("enemy_species");
-							int level = (int)(long)((Long)((JSONObject)o).get("level"));
-							level = gen.nextInt(4) + (level - 1);
-							int min = (int)(long)((Long)((JSONObject)o).get("min"));
-							int max = (int)(long)((Long)((JSONObject)o).get("max"));
-							int amount = 0;
-							if(max != min){
-								amount = gen.nextInt(max - min) + min;
-							}else{
-								amount = max;
-							}
-							ArrayList<Drop> dropList = new ArrayList<Drop>();
-							JSONArray drops = (JSONArray)((JSONObject)o).get("drops");
-							for(Object d : drops){
-								String item_name = (String)((JSONObject)d).get("item");
-								float rate = (Long)((JSONObject)d).get("rate");
-								try{
-									float perc = rate/100;
-									dropList.add(new Drop(Item.valueOf(item_name), perc));
-								}catch(Exception e){
-									e.printStackTrace();
-									System.out.println("in monster drops, some json object is null or couldn't find the item");
-								}
-							}
-							Attack attack = new Attack(0, 0, null, 0, 0, null);
-							JSONArray attacks = (JSONArray)((JSONObject)o).get("attack");
-							for(Object a : attacks){
-								int speed = (int)(long)((Long)((JSONObject)a).get("speed"));
-								int dmgMod = (int)(long)((Long)((JSONObject)a).get("dmg_mod"));
-								int attack_width = (int)(long)((Long)((JSONObject)a).get("width"));
-								String attack_name = (String)((JSONObject)a).get("name");
-								attack = new Attack(speed, dmgMod*level + level*((dmgMod*2)/100), null, attack_width, attack_width, attack_name);
-							}
-							Rectangle rect = new Rectangle(0, 0, 0, 0);
-							JSONArray region = (JSONArray)((JSONObject)o).get("region");
-							for(Object r : region){
-								int x = (int)(long)((Long)((JSONObject)r).get("x"));
-								int y = (int)(long)((Long)((JSONObject)r).get("y"));
-								int rect_height = (int)(long)((Long)((JSONObject)r).get("height"));
-								int rect_width = (int)(long)((Long)((JSONObject)r).get("width"));
-								rect = new Rectangle(x, y, rect_width, rect_height);
-							}
-							try{
-								for(int k = 0; k < amount; k++){
-									int tempX = 0;
-									int tempY = 0;
-									boolean isEmpty = true;
-									do{
-										tempX = gen.nextInt(rect.width) + rect.x;
-										tempY = gen.nextInt(rect.height) + rect.y;
-										for(Entity e : entityManager.getEntities()){
-											if((new Rectangle(tempX, tempY, mon_width, mon_height)).intersects(new Rectangle((int)e.getX(), (int)e.getY(), e.getWidth(), e.getHeight()))){
-												isEmpty = false;
-											}
-										}
-									}while(!isEmpty);
-									Soldier entity = new Soldier(handler, mon_name, tempX, tempY, mon_height, mon_width, ID.Enemy, EnemyType.valueOf(enemy_type), EnemySpecies.valueOf(enemy_species), level, dropList);
-									entity.getStats().setMaxHealth(entity.getStats().getMaxHealth() + 2 * level);
-									if(entity.getEnemyType() == EnemyType.BOSS){
-										entity.setDefaultAttack(attack);
-									}
-									entity.getStats().setArmorRating(2*level);
-									entityManager.addEntity(entity);
-									System.out.println("Monster spawn at: " + entity.getX() + ", " + entity.getY());
-								}
-							}catch(NullPointerException e){
-								e.printStackTrace();
-								System.out.println("Something went wrong with the spawning.");
-							}
-						}
-						break;
-					}
-				}
-				if(base_tile != 0){
-					for(int c = 0; c < worldTiles.length; c++){
-						for(int r = 0; r < worldTiles[c].length; r++){
-							if(worldTiles[c][r] == 0){
-								worldTiles[c][r] = (int)base_tile;
-							}
-						}
-					}
-				}
-				loadNPCs(npc_json);
-				mapName = name;
-			}catch(IOException e){
-				e.printStackTrace();
-				System.out.println("Cannot find Map file: " + filepath);
-			}
-		}
-	}
-	
-	/**
-	 * Creates NPC objects from the Map's NPC JSON file.
-	 * @param filepath Filepath of the NPC JSON file.
-	 */
-	public void loadNPCs(String filepath){
-		
-		HashMap<Item, Integer> buyItems = new HashMap<>();
-		String name = "DEFAULT";
-		String image = "";
-		String type = "";
-		long x = 0;
-		long y = 0;
-		long width = 0;
-		long height = 0;
-		ArrayList<Quest> quests = new ArrayList<>();
-		
-		JSONParser parser = new JSONParser();
-		try{
-			JSONObject obj = (JSONObject)parser.parse(new FileReader(filepath));
-			JSONArray arrays = (JSONArray)obj.get("NPCs");
-			for(int i = 0; i < arrays.size(); i++){
-				JSONObject jsonObject = (JSONObject) arrays.get(i);
-			
-				Set keys = jsonObject.keySet();
-			    Iterator a = keys.iterator();
-			    while(a.hasNext()) {
-			    	String key = (String)a.next();
-			        // loop to get the dynamic key
-			    	Object value = jsonObject.get(key);
-			    	if(jsonObject.get(key) instanceof String){
-			    		switch(key){
-			    		case "name":
-			    			name = (String)value;
-			    			break;
-			    		case "image":
-			    			image = (String)value;
-			    			break;
-			    		case "type":
-			    			type = (String)value;
-			    			break;
-			    		}
-			    	}else if(jsonObject.get(key) instanceof JSONArray){
-			    		value = (JSONArray)jsonObject.get(key);
-			    		switch(key){
-			    		case "quests":
-			    			for(Object o : (JSONArray)jsonObject.get(key)){
-			    				JSONObject arrayObject = (JSONObject)o;
-			    				try{
-			    				quests.add(Quest.valueOf((String)arrayObject.get("ID")));
-			    				}catch(IllegalArgumentException e){
-			    					System.out.println("NPC Quest adder - ID " + (String)arrayObject.get("ID") + " Quest not found.");
-			    				}
-			    			}
-			    			break;
-			    		case "items":
-			    			for(Object o : (JSONArray)jsonObject.get(key)){
-			    				JSONObject arrayObject = (JSONObject)o;
-			    				try{
-			    					Item temp = Item.valueOf((String)arrayObject.get("item"));
-			    					long stack = (long)arrayObject.get("stack");
-			    					buyItems.put(temp, (int)stack);
-			    				}catch(IllegalArgumentException e){
-			    					System.out.println("Merchant NPC BuyList adder - item " + (String)arrayObject.get("item") + " not found.");
-			    				}
-			    			}
-			    			break;
-			    		}
-			    	}else if(jsonObject.get(key) instanceof Long){
-			    		switch(key){
-			    		case "x":
-			    			x = (long)jsonObject.get(key);
-			    			break;
-			    		case "y":
-			    			y = (long)jsonObject.get(key);
-			    			break;
-			    		case "width":
-			    			width = (long)jsonObject.get(key);
-			    			break;
-			    		case "height":
-			    			height = (long)jsonObject.get(key);
-			    			break;
-			    		}
-			    	}
-			    }
-		    }
-		}catch (FileNotFoundException e){
-			e.printStackTrace();
-		}catch (IOException e){
-			e.printStackTrace();
-			System.out.println("Cannot find NPC json file for this map at path: " + filepath);
-		}catch (ParseException e){
-			e.printStackTrace();
-		}
-		//TODO: TEST THIS
-		switch(type.toUpperCase()){
-		case "NPC":
-			try{
-				entityManager.addEntity(new NPC(handler, (float)x, (float)y, (int)width, (int)height, name, image, quests));
-			}catch(NullPointerException e){
-				e.printStackTrace();
-				System.out.println("When creating NPC entity, one or more values is NULL. ");
-			}
-			break;
-		case "MERCHANT":
-			try{
-				entityManager.addEntity(new Merchant(handler, name, (float)x, (float)y, (int)width, (int)height, image, buyItems));
-			}catch(NullPointerException e){
-				e.printStackTrace();
-				System.out.println("When creating MERCHANT entity, one or more values is NULL. ");
-			}
-			break;
-		}
 	}
 	
 	/**
@@ -392,6 +81,26 @@ public class Map{
 			return Tile.tiles[1];
 		}
 		return t;
+	}
+	
+	/**
+	 * Initializes Tiles 
+	 */
+	public static void init(){
+		grass = new Tile(Assets.grass, 0, false);
+		water = new Tile(Assets.water, 1, true);
+	}
+	
+	public int[][] getWorldTiles(){
+		return worldTiles;
+	}
+	
+	public void setWorldTiles(int[][] worldTiles){
+		this.worldTiles = worldTiles;
+	}
+	
+	public void setTile(int x, int y, int num){
+		worldTiles[x][y] = num;
 	}
 	
 	public String getMapName(){
@@ -416,6 +125,10 @@ public class Map{
 	 */
 	public String getFilepath(){
 		return filepath;
+	}
+	
+	public String getMapID(){
+		return mapID;
 	}
 	
 	public Vector2F getSpawn(){

@@ -3,13 +3,16 @@ package virassan.entities.creatures.player;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import virassan.entities.creatures.Creature;
-import virassan.entities.creatures.enemies.EnemyType;
+import virassan.entities.creatures.enemies.Enemy;
+import virassan.entities.creatures.enemies.EnemySpecies;
 import virassan.entities.creatures.npcs.Merchant;
 import virassan.entities.creatures.npcs.NPC;
 import virassan.entities.creatures.player.traits.Traits;
+import virassan.entities.creatures.utils.Move;
 import virassan.entities.creatures.utils.SkillTracker;
 import virassan.entities.creatures.utils.Stats;
 import virassan.gfx.Animation;
@@ -17,8 +20,6 @@ import virassan.gfx.Assets;
 import virassan.input.KeyInput;
 import virassan.input.MouseInput;
 import virassan.main.Handler;
-import virassan.main.ID;
-import virassan.quests.QuestTracker;
 import virassan.utils.Utils;
 import virassan.world.maps.Tile;
 
@@ -39,7 +40,9 @@ public class Player extends Creature{
 	// NPC stuff
 	private NPC currentNPC;
 	private Merchant currentMerchant;
-
+	private HashMap<String, ArrayList<Boolean>> npcMetLiked; //<npcID, [met bool, liked bool]>
+	
+	
 	private String name;
 	private boolean isPaused;
 	
@@ -52,10 +55,13 @@ public class Player extends Creature{
 	
 	// Quest crap
 	private QuestLog questLog;
-	private HashMap<EnemyType, Integer> killList;
+	
+	// Extra Player Info
+	private HashMap<EnemySpecies, Integer> killEnemySpecies;
+	private HashMap<String, Integer> killEnemyID;
 	
 	//Animation crap
-	private Animation walkLeft, walkRight, walkUp, walkDown, animation;
+	private Animation walkLeft, walkRight, walkUp, walkUpRight, walkUpLeft, walkDown, walkDownRight, walkDownLeft, animation;
 	private Animation[] walking;
 	
 	// Key Input
@@ -67,8 +73,8 @@ public class Player extends Creature{
 	 * @param handler
 	 * @param id
 	 */
-	public Player(Handler handler, ID id){
-		this(handler, 0, 0, id, 32, 32, "/textures/entities/static/testing_anime_dude.png");
+	public Player(Handler handler){
+		this(handler, 0, 0, 32, 32, "/textures/entities/player.png");
 	}
 	
 	/**
@@ -79,18 +85,19 @@ public class Player extends Creature{
 	 * @param id Id Enum
 	 * @param filepath File containing the Player's SpriteSheet
 	 */
-	public Player(Handler handler, float x, float y, ID id, int width, int height, String filepath) {
-		super(handler, "Default", x, y, width, height, 1, id);
+	public Player(Handler handler, float x, float y, int width, int height, String filepath) {
+		super(handler, "Default", x, y, width, height, 1);
 		keyInput = handler.getKeyInput();
 		mouseInput = handler.getMouseInput();
-		QuestTracker.handler = handler;
 		this.name = "Player";
 		stats = new Stats(this, 150, 75, 75, 1);
 		stats.setDmgMod(0.02f);
 		stats.setArmorRating(1);
 		damaged = false;
 		npc = false;
-		killList = new HashMap<EnemyType, Integer>();
+		npcMetLiked = new HashMap<>();
+		killEnemySpecies = new HashMap<EnemySpecies, Integer>();
+		killEnemyID = new HashMap<String, Integer>();
 		inventory = new Inventory(this);
 		bounds.x = (int)(x + width/6);
 		bounds.y = (int)(y + 3*height/4);
@@ -98,6 +105,8 @@ public class Player extends Creature{
 		bounds.height = height/4 - 1;
 		direction = 1;
 		gold = 50;
+		
+		speed = 7.0F;
 		
 		questLog = new QuestLog(this);
 		
@@ -114,17 +123,26 @@ public class Player extends Creature{
 	}
 
 	private void initAnimation(String filepath){
-		walking = new Animation[5];
+		walking = new Animation[8];
 		Assets playerSprites = new Assets(filepath);
-		walkLeft = new Animation(350, playerSprites.getWalkingLeft());
-		walkRight = new Animation(350, playerSprites.getWalkingRight());
-		walkUp = new Animation(350, playerSprites.getWalkingUp());
-		walkDown = new Animation(350, playerSprites.getWalkingDown());
+		int animeSpeed = 800;
+		walkLeft = new Animation(animeSpeed, playerSprites.getWalkingLeft());
+		walkRight = new Animation(animeSpeed, playerSprites.getWalkingRight());
+		walkUp = new Animation(animeSpeed, playerSprites.getWalkingUp());
+		walkUpRight = new Animation(animeSpeed, playerSprites.getWalkingUpRight());
+		walkUpLeft = new Animation(animeSpeed, playerSprites.getWalkingUpLeft());
+		walkDown = new Animation(animeSpeed, playerSprites.getWalkingDown());
+		walkDownRight = new Animation(animeSpeed, playerSprites.getWalkingDownRight());
+		walkDownLeft = new Animation(animeSpeed, playerSprites.getWalkingDownLeft());
 		animation = walkDown;
-		walking[0] = walkUp;
-		walking[1] = walkDown;
-		walking[2] = walkRight;
-		walking[3] = walkLeft;
+		walking[0] = walkRight;
+		walking[1] = walkUpRight;
+		walking[2] = walkUp;
+		walking[3] = walkUpLeft;
+		walking[4] = walkLeft;
+		walking[5] = walkDownLeft;
+		walking[6] = walkDown;
+		walking[7] = walkDownRight;
 	}
 	
 	/**
@@ -137,11 +155,9 @@ public class Player extends Creature{
 			for(SkillTracker s : skillList){
 				s.tick(delta);
 			}
-			
-			move(delta);
 			animation.tick(delta);
-			y = Utils.clamp((int)y, 0, Handler.WORLD.getMap().getHeight() * Tile.TILE_HEIGHT - height);
-			x = Utils.clamp((int)x, 0, Handler.WORLD.getMap().getWidth() * Tile.TILE_WIDTH - width);
+			vector.dY = Utils.clamp((int)vector.dY, 0, handler.getMap().getHeight() * Tile.TILE_HEIGHT - height);
+			vector.dX = Utils.clamp((int)vector.dX, 0, handler.getMap().getWidth() * Tile.TILE_WIDTH - width);
 			handler.getGameCamera().centerOnEntity(this);
 			if(stats.isDamaged()){
 				if(damageTime > 0){
@@ -165,24 +181,24 @@ public class Player extends Creature{
 			
 			// Special Commands
 			if(keyInput.E){
-				timerTwo += (System.currentTimeMillis() - otherTime) * delta;
-				otherTime = System.currentTimeMillis() * (long)delta;
+				timerTwo += (System.currentTimeMillis() - otherTime);
+				otherTime = System.currentTimeMillis();
 				if(timerTwo > 100){
 					stats.heal(5);
 					timerTwo = 0;
 				}
 			}
 			else if(keyInput.Q){
-				timer += (System.currentTimeMillis() - lastTime) * delta;
-				lastTime = System.currentTimeMillis() * (long)delta;
+				timer += (System.currentTimeMillis() - lastTime);
+				lastTime = System.currentTimeMillis();
 				if(timer > 100){
 					stats.damage(2);
 					timer = 0;
 				}
 			}
 			else if(keyInput.R){
-				timerTwo += (System.currentTimeMillis() - otherTime) * delta;
-				otherTime = System.currentTimeMillis() * (long)delta;
+				timerTwo += (System.currentTimeMillis() - otherTime);
+				otherTime = System.currentTimeMillis();
 				if(timerTwo > 100){
 					stats.addExperience(100);
 					timerTwo = 0;
@@ -196,8 +212,11 @@ public class Player extends Creature{
 	 * @param g The Graphics for the Game
 	 */
 	public void render(Graphics g) {
+		float xrel = vector.normalize().dX ;//* handler.getGameCamera().getWidth();
+		float yrel = vector.normalize().dY ;//* handler.getGameCamera().getHeight();
+		
 		if(animation.getCurrentFrame() != null){
-			g.drawImage(animation.getCurrentFrame(), (int) (x - handler.getGameCamera().getxOffset()), (int) (y - handler.getGameCamera().getyOffset()), null);
+			g.drawImage(animation.getCurrentFrame(), (int) (xrel - handler.getGameCamera().getxOffset()), (int) (yrel - handler.getGameCamera().getyOffset()), null);
 			g.setColor(Color.RED);
 			g.drawRect(getCollisionBounds(-handler.getGameCamera().getxOffset(), -handler.getGameCamera().getyOffset()).x, getCollisionBounds(-handler.getGameCamera().getxOffset(), -handler.getGameCamera().getyOffset()).y, getCollisionBounds(handler.getGameCamera().getxOffset(), handler.getGameCamera().getyOffset()).width, getCollisionBounds(handler.getGameCamera().getxOffset(), handler.getGameCamera().getyOffset()).height);
 		}else{
@@ -211,39 +230,42 @@ public class Player extends Creature{
 	 * @param b if any arrow key is pressed
 	 */
 	private void movement(double delta, boolean up, boolean down, boolean left, boolean right){
-		//TODO: Cap it when pressing up/down and left/right
-		float xmin = 0;
-		float ymin = 0;
-		velY = 0;
-		velX = 0;
-		if(down){
+		if(up && right){
 			direction = 1;
-			velY += speed;
-			ymin = 0;
 		}
-		if(left){
+		else if(up && left){
 			direction = 3;
-			velX -= speed;
-			xmin = -speed;
 		}
-		if(right){
-			direction = 2;
-			velX += speed;
-			xmin = 0;
+		else if(down && right){
+			direction = 7;
 		}
-		if(up){
+		else if(down && left){
+			direction = 5;
+		}
+		else if(down){
+			direction = 6;
+		}
+		else if(left){
+			direction = 4;
+		}
+		else if(right){
 			direction = 0;
-			velY -= speed;
-			ymin = -speed;
 		}
-		animation = walking[direction];
-		animation.start();
-		animation.setAnimationLoop(true);
-		animation.setTimeShared(true);
-		if(!up && !down && !right && !left)
+		else if(up){
+			direction = 2;
+		}else{
+			direction = -1;
+		}
+		isMoving = Move.move(this, speed, direction, (float)delta);
+		if(isMoving){
+			animation = walking[direction];
+			animation.start();
+			animation.setAnimationLoop(true);
+			animation.setTimeShared(true);
+		}else{
 			animation.setAnimationLoop(false);
-		velY = Utils.clamp((float)(velY*delta), ymin, ymin + speed);
-		velX = Utils.clamp((float)(velX*delta), xmin, xmin + speed);
+		}
+		
 	}
 	
 	/**
@@ -293,8 +315,27 @@ public class Player extends Creature{
 		traits = new Traits(this, speech, end, res, dex, intel);
 	}
 
-	public HashMap<EnemyType, Integer> getKillList() {
-		return killList;
+	public HashMap<String, Integer> getKillEnemyID(){
+		return killEnemyID;
+	}
+	
+	public HashMap<EnemySpecies, Integer> getKillEnemySpecies() {
+		return killEnemySpecies;
+	}
+	
+	public void addKillList(Enemy enemy){
+		//TODO: wtf is the point of the Soldier class? Maybe for different behaviors? 
+		if(killEnemySpecies.containsKey(enemy.getSpecies())){
+			killEnemySpecies.replace(enemy.getSpecies(), killEnemySpecies.get(enemy.getSpecies()) + 1);
+		}else{
+			killEnemySpecies.put(enemy.getSpecies(), 1);
+		}
+		if(killEnemyID.containsKey(enemy.getEnemyID())){
+			killEnemyID.replace(enemy.getEnemyID(), killEnemyID.get(enemy.getEnemyID()) + 1);
+		}else{
+			killEnemyID.put(enemy.getEnemyID(), 1);
+		}
+		
 	}
 	
 	public String toString(){
@@ -359,5 +400,48 @@ public class Player extends Creature{
 	
 	public int getCurSkillIndex(){
 		return curSkillIndex;
+	}
+
+	public void setNPCMetLiked(HashMap<String, ArrayList<Boolean>> hash){
+		npcMetLiked = hash;
+	}
+	
+	public HashMap<String, ArrayList<Boolean>> getNpcMetLiked(){
+		return npcMetLiked;
+	}
+	
+	public void setNPCMet(String npcID){
+		if(npcMetLiked.containsKey(npcID)){
+			System.out.println("Error Message: Player_setNPCMet NPC_ALREADY_MET");
+		}else{
+			npcMetLiked.put(npcID, new ArrayList<Boolean>(Arrays.asList(true, true)));
+		}
+	}
+	
+	public void setNPCLiked(String npcID, boolean liked){
+		if(npcMetLiked.containsKey(npcID)){
+			npcMetLiked.replace(npcID, new ArrayList<Boolean>(Arrays.asList(npcMetLiked.get(npcID).get(0), liked)));
+		}else{
+			npcMetLiked.put(npcID, new ArrayList<Boolean>(Arrays.asList(true, liked)));
+		}
+	}
+	
+	public boolean isNPCMet(String npcID){
+		if(npcMetLiked.containsKey(npcID)){
+			return npcMetLiked.get(npcID).get(0).booleanValue();
+		}
+		return false;
+	}
+	
+	public boolean isNPCLiked(String npcID){
+		if(npcMetLiked.containsKey(npcID)){
+			return npcMetLiked.get(npcID).get(1).booleanValue();
+		}
+		return false;
+	}
+	
+	@Override
+	public Class findClass() {
+		return getClass();
 	}
 }

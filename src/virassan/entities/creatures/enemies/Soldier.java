@@ -3,6 +3,7 @@ package virassan.entities.creatures.enemies;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
@@ -12,15 +13,15 @@ import virassan.gfx.Animation;
 import virassan.gfx.Assets;
 import virassan.items.Drop;
 import virassan.main.Handler;
-import virassan.main.ID;
 
 public class Soldier extends Enemy{
 	
 	private BufferedImage sprite;
 	private float spawnX, spawnY;
 	
-	public Soldier(Handler handler, String name, float x, float y, int height, int width, ID id, EnemyType type, EnemySpecies species, int level) {
-		super(handler, name, x, y, level, id, type, species);
+	public Soldier(Handler handler, String name, String enemyID, float x, float y, int height, int width, EnemySpecies species, int level) {
+		super(handler, name, enemyID, x, y, level, species);
+		this.enemyID = enemyID;
 		aggroDistance = (int)(Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2))) * 3;
 		stats.setEntity(this);
 		stats.setMaxHealth(70 + (level * 5));
@@ -30,9 +31,11 @@ public class Soldier extends Enemy{
 		stats.setCritMult(0.005F * level);
 		damaged = false;
 		isMoving = false;
+		speed = 5.0F;
 		
+		ranInterval = new Random().nextInt(200)+300;
 		direction = new Random().nextInt(4);
-		walking = new Animation[5];
+		walking = new Animation[8];
 		this.spawnX = x;
 		this.spawnY = y;		
 		
@@ -48,17 +51,22 @@ public class Soldier extends Enemy{
 		sprite = entitySprites.getFront_1();
 		
 		//Animation Shtuff
-		walkLeft = new Animation(200, entitySprites.getWalkingLeft());
-		walkRight = new Animation(200, entitySprites.getWalkingRight());
-		walkUp = new Animation(200, entitySprites.getWalkingUp());
-		walkDown = new Animation(200, entitySprites.getWalkingDown());
-		walking[0] = walkUp;
-		walking[1] = walkDown;
-		walking[2] = walkRight;
+		int animeSpeed = 200;
+		walkLeft = new Animation(animeSpeed, entitySprites.getWalkingLeft());
+		walkRight = new Animation(animeSpeed, entitySprites.getWalkingRight());
+		walkUp = new Animation(animeSpeed, entitySprites.getWalkingUp());
+		walkDown = new Animation(animeSpeed, entitySprites.getWalkingDown());
+		walking[0] = walkRight;
+		walking[1] = walkRight;
+		walking[2] = walkUp;
 		walking[3] = walkLeft;
+		walking[4] = walkLeft;
+		walking[5] = walkLeft;
+		walking[6] = walkDown;
+		walking[7] = walkRight;
 		animation = walkDown;
 		
-		defaultAttack = new Attack(900, 3 * level, animation, 25, 25, "Default");
+		defaultAttack = new Attack(900, 3 * level, animation, 55, "Default");
 		
 		//Moving Bounds
 		walkBounds.x = (int)(spawnX  - handler.getGameCamera().getxOffset()- type.getWidth()*5);
@@ -67,17 +75,17 @@ public class Soldier extends Enemy{
 		walkBounds.height = type.getHeight()*20;
 	}
 	
-	public Soldier(Handler handler, String name, float x, float y, int height, int width, ID id, EnemyType type, EnemySpecies species, int level, Drop[] drops){
-		this(handler, name, x, y, height, width, id, type, species, level);
+	public Soldier(Handler handler, String name, String enemyID, float x, float y, int height, int width, EnemySpecies species, int level, Drop[] drops){
+		this(handler, name, enemyID, x, y, height, width, species, level);
 		this.drops = drops;
 	}
 	
-	public Soldier(Handler handler, String name, float x, float y, ID id, EnemyType type, EnemySpecies species, int level, Drop[] drops) {
-		this(handler, name, x, y, 32, 32, id, type, species, level, drops);
+	public Soldier(Handler handler, String name, String enemyID, float x, float y, EnemySpecies species, int level, Drop[] drops) {
+		this(handler, name, enemyID, x, y, 32, 32, species, level, drops);
 	}
 
-	public Soldier(Handler handler, String name, float x, float y, int height, int width, ID id, EnemyType type, EnemySpecies species, int level, ArrayList<Drop> drops){
-		this(handler, name, x, y, height, width, id, type, species, level);
+	public Soldier(Handler handler, String name, String enemyID, float x, float y, int height, int width, EnemySpecies species, int level, ArrayList<Drop> drops){
+		this(handler, name, enemyID, x, y, height, width, species, level);
 		this.drops =  new Drop[drops.size()];
 		for(int i = 0; i < drops.size(); i++){
 			this.drops[i] = drops.get(i);
@@ -88,6 +96,7 @@ public class Soldier extends Enemy{
 	@Override
 	public void tick(double delta) {
 		move(delta);
+		attack();
 		if(isMoving){
 			animation.setAnimationLoop(true);
 		}else{
@@ -99,17 +108,21 @@ public class Soldier extends Enemy{
 
 	@Override
 	public void render(Graphics g) {
+		float xrel = vector.normalize().dX ;//* handler.getGameCamera().getWidth();
+		float yrel = vector.normalize().dY ;//* handler.getGameCamera().getHeight();
+		
 		if(animation.getCurrentFrame() != null){
-			g.drawImage(animation.getCurrentFrame(), (int) (x - handler.getGameCamera().getxOffset()), (int) (y - handler.getGameCamera().getyOffset()), null);
+			g.drawImage(animation.getCurrentFrame(), (int) (xrel - handler.getGameCamera().getxOffset()), (int) (yrel - handler.getGameCamera().getyOffset()), null);
 		}else
-			g.drawImage(sprite, (int) (x - handler.getGameCamera().getxOffset()), (int) (y - handler.getGameCamera().getyOffset()), null);
+			g.drawImage(sprite, (int) (xrel - handler.getGameCamera().getxOffset()), (int) (yrel - handler.getGameCamera().getyOffset()), null);
 		stats.render(g);
-		/* Display's the coords of the entity above their head
-		g.drawString(x + " " + y, (int)(x - handler.getGameCamera().getxOffset())-14, (int)(y - handler.getGameCamera().getyOffset()) - 5);
-		*/
+		//Display's the coords of the entity above their head
+		//g.setColor(Color.BLACK);
+		//g.drawString(x + " " + y, (int)(x - handler.getGameCamera().getxOffset())-14, (int)(y - handler.getGameCamera().getyOffset()) - 5);
+		
 		g.setColor(Color.YELLOW);
 		g.setFont(new Font("Verdana", Font.PLAIN, 12));
-		g.drawString(name, (int)(x - handler.getGameCamera().getxOffset()), (int)(y - handler.getGameCamera().getyOffset()+2));
+		g.drawString(name, (int)(xrel - handler.getGameCamera().getxOffset()), (int)(yrel - handler.getGameCamera().getyOffset()+2));
 	}
 
 	
@@ -129,6 +142,11 @@ public class Soldier extends Enemy{
 
 	public String toString(){
 		return name;
+	}
+
+	@Override
+	public Class findClass() {
+		return getClass().getSuperclass();
 	}
 	
 }

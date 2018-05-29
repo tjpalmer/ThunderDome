@@ -3,9 +3,8 @@ package virassan.entities;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-import virassan.entities.creatures.player.Player;
 import virassan.main.Handler;
-import virassan.main.ID;
+import virassan.utils.Vector2F;
 
 /**
  * Creates Entities, creates bounds, and checks collision
@@ -15,8 +14,7 @@ import virassan.main.ID;
 public abstract class Entity {
 
 	protected Handler handler;
-	protected float x, y;
-	protected ID id;
+	protected Vector2F vector;
 	protected float velX, velY; //speed
 	protected int width, height;
 	protected boolean isDead;
@@ -31,11 +29,9 @@ public abstract class Entity {
 	 * @param width 
 	 * @param height
 	 */
-	public Entity(Handler handler, float x, float y, int width, int height, ID id){
+	public Entity(Handler handler, float x, float y, int width, int height){
 		this.handler = handler;
-		this.x = x;
-		this.y = y;
-		this.id = id;
+		vector = new Vector2F(x,y);
 		this.width = width;
 		this.height = height;
 		bounds = new Rectangle(0,0, width, height);
@@ -49,21 +45,21 @@ public abstract class Entity {
 	 * @return rectangle the collision box
 	 */
 	public Rectangle getCollisionBounds(float xOffset, float yOffset){
-		return new Rectangle((int) (x + bounds.x + xOffset), (int) (y + bounds.y + yOffset), bounds.width, bounds.height);
+		return new Rectangle((int) (vector.dX + bounds.x + xOffset), (int) (vector.dY + bounds.y + yOffset), bounds.width, bounds.height);
 	}
 	
 	/**
 	 * Returns if collision or not
-	 * @param xOffset //TODO: 
-	 * @param yOffset //TODO:
+	 * @param xOffset 
+	 * @param yOffset 
 	 * @return true is collision, false if not
 	 */
 	public boolean checkEntityCollisions(float xOffset, float yOffset){
-		for(Entity e : Handler.WORLD.getMap().getEntityManager().getEntities()){
+		for(Entity e : handler.getMap().getEntityManager().getEntities()){
 			if(e.equals(this)){
 				continue;
 			}
-			if(e.getCollisionBounds(0f, 0f).intersects(getCollisionBounds(xOffset, yOffset))){
+			if(e.getCollisionBounds(0f, 0f).intersects(this.getCollisionBounds(xOffset, yOffset))){
 				return true;
 			}
 		}
@@ -119,8 +115,7 @@ public abstract class Entity {
 	 * @param x
 	 */
 	public void setX(float x) {
-		this.x = x;
-		//System.out.println("Entity x: " + x);
+		vector.dX = x;
 	}
 
 	/**
@@ -128,17 +123,11 @@ public abstract class Entity {
 	 * @param y
 	 */
 	public void setY(float y) {
-		this.y = y;
-		//System.out.println("Entity y: " + y);
+		vector.dY = y;
 	}
 	
-	/**
-	 * Sets the ID Enum for the Entity
-	 * @param id
-	 */
-	public void setId(ID id)
-	{
-		this.id = id;
+	public Vector2F getCenter(){
+		return new Vector2F(vector.dX + (width/2), vector.dY + (height/2));
 	}
 	
 	/**
@@ -165,7 +154,7 @@ public abstract class Entity {
 	 */
 	public float getX()
 	{
-		return x;
+		return vector.dX;
 	}
 	
 	/**
@@ -174,16 +163,7 @@ public abstract class Entity {
 	 */
 	public float getY()
 	{
-		return y;
-	}
-	
-	/**
-	 * Returns the ID Enum of the Entity
-	 * @return
-	 */
-	public ID getId()
-	{
-		return id;
+		return vector.dY;
 	}
 	
 	/**
@@ -213,6 +193,8 @@ public abstract class Entity {
 	
 	public void isDead(boolean b){
 		isDead = b;
-	}
-
+	}	
+	
+	abstract public Class findClass();
+	
 }

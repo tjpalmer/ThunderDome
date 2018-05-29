@@ -3,6 +3,7 @@
 	[
 		{"name":"Timmy the Merchant",
 		"type":"Merchant",
+		"npc_id":"A_002",
 		"x":600,
 		"y":100,
 		"width":64,
@@ -15,6 +16,7 @@
 		},
 		{"name":"Jimmy the Useless",
 		"type":"NPC",
+		"npc_id":"A_001",
 		"x":500,
 		"y":150,
 		"width":64,

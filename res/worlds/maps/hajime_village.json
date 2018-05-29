@@ -1,10 +1,11 @@
 {
+	"id":"haj_vi_01",
 	"name":"Hajime Village",
 	"width":30,
 	"height":30,
 	"spawn_x":600,
 	"spawn_y":260,
-	"npc_json":"res/worlds/maps/entities/npcs/hajime_village.json",
+	"npc_ids":["A_001", "A_002", "A_003", "A_004", "A_005"],
 	"base_tile":0,
 	"arrays":[
 		{"warp_portal":[
@@ -59,7 +60,7 @@
 			{"name":"Slime", 
 			"width":32,
 			"height":32,
-			"enemy_type":"SOLDIER", 
+			"enemy_id":"S_001", 
 			"enemy_species":"SLIME", 
 			"level":2,
 			"min":5,
@@ -77,7 +78,7 @@
 			{"name": "Slime Boss", 
 			"width":32,
 			"height":32,
-			"enemy_type":"BOSS", 
+			"enemy_id":"S_002", 
 			"enemy_species":"SLIME", 
 			"level":10,
 			"min":1,
@@ -90,7 +91,7 @@
 				{"item":"IRON_BOOTS", "rate":7},
 				{"item":"IRON_HELM", "rate":3}],
 			"attack":[
-				{"speed": 1000, "dmg_mod":5, "width":20, "name": "Default"}],
+				{"speed": 1000, "dmg_mod":5, "range":50, "name": "Default"}],
 			"region":[
 				{"x":448, "y":375, "width":400, "height":400}]
 			}

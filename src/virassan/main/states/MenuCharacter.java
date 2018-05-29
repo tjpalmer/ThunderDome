@@ -15,6 +15,7 @@ public class MenuCharacter {
 	private MouseInput mouseInput;
 	private KeyInput keyInput;
 	
+	//TODO: do up this entire thing
 	
 	public MenuCharacter(Handler handler) {
 		this.handler = handler;
@@ -39,8 +40,8 @@ public class MenuCharacter {
 			rightClick();
 		}
 		hover();
-		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
-		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST);
+		HUDManager.MENULAST = System.currentTimeMillis();
 	}
 	
 	public void leftClick(){

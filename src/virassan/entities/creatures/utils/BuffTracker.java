@@ -1,5 +1,6 @@
 package virassan.entities.creatures.utils;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 import virassan.entities.creatures.Creature;
@@ -26,7 +27,6 @@ public class BuffTracker {
 	 * @param time - In Seconds
 	 */
 	public BuffTracker(Creature target, BufferedImage image, String type, String name, String effect, int effectAmt, int time){
-		// TODO Auto-generated constructor stub
 		this.target = target;
 		this.image = image;
 		this.name = name;
@@ -45,8 +45,8 @@ public class BuffTracker {
 	public void tick(double delta){
 		// 1 second = 1,000 milliseconds
 		if(isLive){
-			timerSec += (System.currentTimeMillis() - lastSec) * delta;
-			lastSec = System.currentTimeMillis() * (long)delta;
+			timerSec += (System.currentTimeMillis() - lastSec);
+			lastSec = System.currentTimeMillis();
 			if(timerSec >= 1000){
 				if(type.equals("buff")){
 					switch(effect){
@@ -62,7 +62,7 @@ public class BuffTracker {
 			}
 			if(count > time){
 				isLive = false;
-				System.out.println("Buff Dead");
+				System.out.println("Message: BuffTracker_tick Buff Dead");
 			}
 		}
 	}

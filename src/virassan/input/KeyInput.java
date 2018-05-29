@@ -96,8 +96,6 @@ public class KeyInput implements KeyListener{
 		if(isTyping){
 			char keyCharacter = e.getKeyChar();
 			text += keyCharacter;
-			// System.out.println("Key Typed: " + e);
-			// System.out.println("Text: " + text);
 		}
 	}
 

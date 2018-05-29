@@ -11,9 +11,11 @@ import virassan.gfx.GameCamera;
 import virassan.input.KeyInput;
 import virassan.input.MouseInput;
 import virassan.items.ItemManager;
+import virassan.main.states.GameState;
 import virassan.main.states.LaunchLoad;
 import virassan.main.states.LaunchMenu;
 import virassan.main.states.LaunchNew;
+import virassan.main.states.LoadMap;
 import virassan.main.states.MenuCharacter;
 import virassan.main.states.MenuInventory;
 import virassan.main.states.MenuLevelUp;
@@ -24,7 +26,6 @@ import virassan.main.states.MenuSkills;
 import virassan.main.states.NPCDialog;
 import virassan.main.states.NPCShop;
 import virassan.main.states.States;
-import virassan.world.World;
 import virassan.world.maps.Map;
 
 /**
@@ -62,9 +63,13 @@ public class Handler {
 	public static LaunchMenu LAUNCHMENU;
 	public static LaunchNew LAUNCHNEW;
 	public static LaunchLoad LAUNCHLOAD;
-	public static World WORLD;
+	public static LoadMap LOADMAP;
+	public static GameState GAMESTATE;
 	
+	private String mapID;
+	private Map map;
 	private Player player;
+	private GameCamera gameCamera;
 	private Game game;
 	private States curState;
 	
@@ -79,10 +84,11 @@ public class Handler {
 	public Handler(Game game){
 		this.game = game;
 		//isNaming = true;
-		player = new Player(this, ID.Player);
+		player = new Player(this);
 		LAUNCHLOAD = new LaunchLoad(this);
 		LAUNCHNEW = new LaunchNew(this);
 		LAUNCHMENU = new LaunchMenu(this);
+		LOADMAP = new LoadMap(this);
 		MENULVL = new MenuLevelUp(this);
 		MENUQUEST = new MenuQuest(this);
 		MENUSET = new MenuSettings(this);
@@ -92,11 +98,13 @@ public class Handler {
 		MENUCHAR = new MenuCharacter(this);
 		NPCDIALOG = new NPCDialog(this);
 		NPCSHOP = new NPCShop(this);
+		GAMESTATE = new GameState(this);
 		curState = States.LaunchMenu;
+		gameCamera = new GameCamera(this, 0,0);
 	}
 	
 	/**
-	 * Ticks the World
+	 * Ticks everything
 	 * @param delta 
 	 */
 	public void tick(double delta)
@@ -146,8 +154,11 @@ public class Handler {
 		case NPCShop:
 			NPCSHOP.tick(delta);
 			break;
-		case World:
-			WORLD.tick(delta);
+		case GameState:
+			GAMESTATE.tick(delta);
+			break;
+		case LoadMap:
+			LOADMAP.tick(delta);
 			break;
 		default:
 			LAUNCHMENU.tick(delta);
@@ -161,21 +172,7 @@ public class Handler {
 	 */
 	public void render(Graphics g)
 	{
-		/*
-		if(isNaming){
-			g.setColor(Color.LIGHT_GRAY);
-			g.fillRect(200, 200, 200, 20);
-			g.setColor(Color.BLACK);
-			g.drawString("What would you like to Name your character?", 200, 190);
-			String text = getKeyInput().getTyped();
-			g.drawString(text, 215, 215);
-			if(getKeyInput().enter){
-				isNaming = false;
-				getPlayer().setName(text);
-				getKeyInput().isTyping(false);
-			}
-		}
-		*/
+		
 		switch(curState){
 		case LaunchLoad:
 			LAUNCHLOAD.render(g);
@@ -213,8 +210,11 @@ public class Handler {
 		case NPCShop:
 			NPCSHOP.render(g);
 			break;
-		case World:
-			WORLD.render(g);
+		case GameState:
+			GAMESTATE.render(g);
+			break;
+		case LoadMap:
+			LOADMAP.render(g);
 			break;
 		default:
 			LAUNCHMENU.render(g);
@@ -223,9 +223,28 @@ public class Handler {
 	}	
 	
 	// GETTERS AND SETTERS
-	public void setWorld(World world){
-		WORLD = world;
-		player = world.getPlayer();
+	public void setPlayer(Player player){
+		this.player = player;
+		if(map == null){
+			System.out.println("Error Message: Handler_setPlayer map is null.");
+		}
+		map.getEntityManager().setPlayer(player);
+	}
+	
+	public void setMap(Map map){
+		this.map = map;
+	}
+	
+	public void setMap(String map_id){
+		System.out.println("Update Message: Handler_setMap Loading Map!");
+		if(!map_id.equals(map.getMapID())){
+			this.mapID = map_id;
+			setState(States.LoadMap);
+		}
+	}
+	
+	public void setMapID(String mapID){
+		this.mapID = mapID;
 	}
 	
 	public void setState(States state){
@@ -245,15 +264,29 @@ public class Handler {
 	}
 
 	public int getWidth(){
-		return game.getWidth();
+		int w = 0;
+		try{
+			w = (int)gameCamera.getWidth();
+		}catch(NullPointerException e){
+			w = game.getDisplayWidth();
+			System.out.println("Error Message: Handler_getWidth set width to Display width");
+		}
+		return w;
 	}
 	
 	public int getHeight(){
-		return game.getHeight();
+		int h = 0;
+		try{
+			h = (int)gameCamera.getHeight();
+		}catch(NullPointerException e){
+			h = game.getDisplayHeight();
+			System.out.println("Error Message: Handler_getHeight set height to Display height");
+		}
+		return h;
 	}
 	
 	public GameCamera getGameCamera(){
-		return game.getGameCamera();
+		return gameCamera;
 	}
 	
 	public KeyInput getKeyInput(){
@@ -269,7 +302,7 @@ public class Handler {
 	}
 	
 	public ItemManager getItemManager(){
-		return WORLD.getItemManager();
+		return GAMESTATE.getItemManager();
 	}
 	
 	public EntityManager getEntityManager(){
@@ -277,6 +310,10 @@ public class Handler {
 	}
 	
 	public Map getMap(){
-		return WORLD.getMap();
+		return map;
+	}
+	
+	public String getMapID(){
+		return mapID;
 	}
 }

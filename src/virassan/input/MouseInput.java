@@ -29,8 +29,8 @@ public class MouseInput implements MouseListener, MouseMotionListener{
 	}
 	
 	public void tick(double delta){
-		doubleTimer += (System.currentTimeMillis() - doubleLast) * delta;
-		doubleLast = System.currentTimeMillis() * (long)delta;
+		doubleTimer += (System.currentTimeMillis() - doubleLast);
+		doubleLast = System.currentTimeMillis();
 	}
 	
 	public void render(Graphics g){
@@ -90,6 +90,7 @@ public class MouseInput implements MouseListener, MouseMotionListener{
 				startDrag = e.getPoint();
 			}
 			leftClicks.add(new Node(e.getPoint()));
+			System.out.println("UpdateMessage: MouseInput_mousePressed left mouse clicked");
 			doubleTimer = 0;
 		}else if(e.getButton() == MouseEvent.BUTTON3){ //right button
 			rightPressed = true;

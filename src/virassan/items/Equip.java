@@ -1,5 +1,6 @@
 package virassan.items;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 import virassan.gfx.Assets;
@@ -18,9 +19,9 @@ public enum Equip {
 	ACCESS2("Accessory 2", Assets.defaultAcc2);
 	
 	private String name;
-	private BufferedImage defaultImage;
+	private Image defaultImage;
 	
-	private Equip(String name, BufferedImage defaultImage){
+	private Equip(String name, Image defaultImage){
 		this.name = name;
 		this.defaultImage = defaultImage;
 	}
@@ -29,7 +30,7 @@ public enum Equip {
 		return name;
 	}
 	
-	public BufferedImage getImage(){
+	public Image getImage(){
 		return defaultImage;
 	}
 	

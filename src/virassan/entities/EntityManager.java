@@ -9,10 +9,8 @@ import virassan.entities.creatures.enemies.Enemy;
 import virassan.entities.creatures.npcs.Merchant;
 import virassan.entities.creatures.player.Player;
 import virassan.entities.statics.StaticEntity;
-import virassan.input.LinkedQueue;
 import virassan.main.Display;
 import virassan.main.Handler;
-import virassan.quests.QuestTracker;
 
 public class EntityManager {
 
@@ -55,6 +53,7 @@ public class EntityManager {
 				}
 			}else{
 				if(entities.get(i) instanceof Enemy){
+					/*
 					if(handler.getPlayer().getKillList().containsKey(((Enemy)entities.get(i)).getEnemyType())){
 						if(handler.getPlayer().getKillList().get(((Enemy)entities.get(i)).getEnemyType()) != null){
 							handler.getPlayer().getKillList().replace(((Enemy)entities.get(i)).getEnemyType(), handler.getPlayer().getKillList().get(((Enemy)entities.get(i)).getEnemyType())+1);
@@ -64,14 +63,17 @@ public class EntityManager {
 					}else{
 						handler.getPlayer().getKillList().put(((Enemy)entities.get(i)).getEnemyType(), 1);
 					}
-					System.out.println(handler.getPlayer().getKillList());
+					*/
+					System.out.println("Message: EntityManager_tick " + handler.getPlayer().getKillEnemySpecies() + " : " + handler.getPlayer().getKillEnemyID());
+					/*
 					for(QuestTracker quest : handler.getPlayer().getQuestLog().getActive()){
 						if(quest.getQuest().getHashMap().containsKey(((Enemy)entities.get(i)).getSpecies())){
 							quest.addEnemyCount(((Enemy)entities.get(i)).getSpecies());
-						}else if(quest.getQuest().getHashMap().containsKey(((Enemy)entities.get(i)).getEnemyType())){
-							quest.addEnemyCount(((Enemy)entities.get(i)).getEnemyType());
+						}else if(quest.getQuest().getHashMap().containsKey(((Enemy)entities.get(i)).getEnemyID())){
+							quest.addEnemyCount(((Enemy)entities.get(i)).getEnemyID());
 						}
 					}
+					*/
 				}
 				entities.remove(entities.get(i));
 				i--;
@@ -87,17 +89,22 @@ public class EntityManager {
 	
 	public void render(Graphics g){
 		int xStart = (int)handler.getGameCamera().getxOffset() - 60;
-		int xEnd = (int)(Display.WIDTH + handler.getGameCamera().getxOffset()) + 60;
+		int xEnd = (int)(handler.getGameCamera().getWidth() + handler.getGameCamera().getxOffset()) + 60;
 		int yStart = (int)handler.getGameCamera().getyOffset() - 60;
-		int yEnd = (int)(handler.getGameCamera().getyOffset() + Display.HEIGHT) + 60;
+		int yEnd = (int)(handler.getGameCamera().getyOffset() + handler.getHeight()) + 60;
 		for(StaticEntity e : statics){
 			if(e.getX() >= xStart-e.getWidth() && e.getX() <= xEnd && e.getY() >= yStart-e.getHeight() && e.getY() <= yEnd){
 				e.render(g);
 			}
 		}
 		for(Entity e : entities){
-			if(e.getX() >= xStart-e.getWidth() && e.getX() <= xEnd && e.getY() >= yStart-e.getHeight() && e.getY() <= yEnd){
-				e.render(g);
+			try{
+				if(e.getX() >= xStart-e.getWidth() && e.getX() <= xEnd && e.getY() >= yStart-e.getHeight() && e.getY() <= yEnd){
+					e.render(g);
+				}
+			}catch(NullPointerException k){
+				System.out.println("Error Message: EntityManager_render Entity is: " + e);
+				k.printStackTrace();
 			}
 		}
 	}

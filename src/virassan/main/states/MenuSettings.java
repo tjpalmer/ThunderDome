@@ -79,11 +79,11 @@ public class MenuSettings {
 		words.add("Drag a Skill to the skillbar to put it in that slot - COMING SOON");
 		ArrayList<String> temp = new ArrayList<>();
 		for(String text : words){
-			for(String display : Utils.wrapText(text, Display.WIDTH - 150, g.getFontMetrics())){
+			for(String display : Utils.wrapText(text, handler.getWidth() - 150, g.getFontMetrics())){
 				temp.add(display);
 			}
 		}
-		helpScroll = new ScrollPanel(new Rectangle(60, 100, Display.WIDTH - 100, 600));
+		helpScroll = new ScrollPanel(new Rectangle(60, 100, handler.getWidth() - 100, 600));
 		helpScroll.addStrings(temp, g.getFont(), g.getFontMetrics(), g.getColor());
 		helpScroll.render(g);
 	}
@@ -95,13 +95,13 @@ public class MenuSettings {
 		if(!mouseInput.getRightClicks().isEmpty()){
 			rightClick();
 		}
-		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
-		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST);
+		HUDManager.MENULAST = System.currentTimeMillis();
 		if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){
 			if(keyInput.esc || keyInput.I || keyInput.L || keyInput.K){
 				HUDManager.MENUTIMER = 0;
 				if(keyInput.esc){
-					handler.setState(States.World);
+					handler.setState(States.GameState);
 					handler.getEntityManager().setPaused(false);
 				}else if(keyInput.I){
 					handler.setState(States.MenuInventory);

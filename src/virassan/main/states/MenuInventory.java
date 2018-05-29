@@ -3,9 +3,9 @@ package virassan.main.states;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import virassan.entities.creatures.player.Inventory;
@@ -54,9 +54,42 @@ public class MenuInventory {
 	public void render(Graphics g){
 		player = handler.getPlayer();
 		inv = player.getInventory();
-		Rectangle[][] slots = inv.getSlots();
 		g.drawImage(Assets.invCharMenu, 0, 0, null);
 		g.setFont(new Font("Verdana", Font.BOLD, 26));
+		
+		// Current Tab
+		renderCurTab(g);
+		
+		// CHARACTER CRAP
+		renderCharacterInfo(g);
+		
+		// ITEMS
+		renderItems(g);
+		
+		// ITEM DRAGGING
+		renderItemDragging(g);
+		
+		// Item Menu Crap
+		if(displayItemMenu){
+			renderItemMenu(g);
+		}else if(displayItemInfo){
+			renderItemInfo(g);
+		} 
+		
+		// Display Item Name
+		renderItemName(g);
+		
+		// Red outline around playerPortrait
+		g.setColor(Color.RED);
+		g.drawRect(playerPortrait.x, playerPortrait.y, playerPortrait.width, playerPortrait.height);
+		g.drawRect(40, 125, 645, 465);
+		g.drawRect(715, 125, 525, 455);
+		
+		// Render Menu Tabs
+		renderMenuTabs(g);
+	}
+	
+	public void renderCurTab(Graphics g){
 		String food = "Food";
 		String weap = "Weapons";
 		String arm = "Armor";
@@ -90,10 +123,12 @@ public class MenuInventory {
 			g.setColor(Handler.LAVENDER);
 		}
 		g.drawString(misc, 700 - 40 - g.getFontMetrics().stringWidth(misc), y);
-		// CHARACTER CRAP
+	}
+	
+	public void renderCharacterInfo(Graphics g){
 		int center = (64/2) - (Assets.ITEM_HEIGHT/2);
 		for(Equip equip : player.getStats().getEquip().keySet()){
-			BufferedImage image = null;
+			Image image = null;
 			boolean defaultImage = false;
 			if(player.getStats().getEquip().get(equip) != null){
 				image = player.getStats().getEquip().get(equip).getImage();
@@ -155,7 +190,10 @@ public class MenuInventory {
 				tempx += 30 + g.getFontMetrics().stringWidth(charInfo[i]);
 			}
 		}
-		// ITEMS
+	}
+	
+	public void renderItems(Graphics g){
+		Rectangle[][] slots = inv.getSlots();
 		g.setColor(Color.WHITE);
 		g.setFont(new Font("Verdana", Font.PLAIN, 18));
 		g.drawString("Gold: " + (int)player.getGold(), 330, 105);
@@ -174,54 +212,60 @@ public class MenuInventory {
 				}
 			}
 		}
-		// ITEM DRAGGING
+	}
+	
+	public void renderItemDragging(Graphics g){
 		if(mouseInput.isDragged()){
 			if(curItem != null){
-				g.drawImage(curItem.getImage(), Utils.clamp(mouseInput.getDragged().x + (curItem.getImage().getWidth()/2), 0, Display.WIDTH - curItem.getImage().getWidth()), Utils.clamp(mouseInput.getDragged().y + (curItem.getImage().getHeight()/2), 0, Display.HEIGHT - curItem.getImage().getHeight()), null);
+				g.drawImage(curItem.getImage(), Utils.clamp(mouseInput.getDragged().x + 
+						(curItem.getImage().getWidth()/2), 0, handler.getWidth() - curItem.getImage().getWidth()), 
+						Utils.clamp(mouseInput.getDragged().y + (curItem.getImage().getHeight()/2), 0, handler.getHeight() - curItem.getImage().getHeight()), null);
 			}
 		}
-		// Item Menu Crap
-		if(displayItemMenu){
-			g.setColor(Handler.ITEM_MENU);
-			g.fillRect(curMenu.x, curMenu.y, curMenu.width, curMenu.height);
-			g.setColor(Color.WHITE);
-			g.setFont(new Font("Verdana", Font.PLAIN, 16));
-			if(equipItemMenu){
-				g.drawString("UnEquip", curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight());
-				g.drawString("Destroy", curMenu.x + 10, curMenu.y + 2 + 18 + g.getFontMetrics().getHeight());
-			}else{
-				switch(curItem.getItemType()){
-				case FOOD: g.drawString("Use", curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight());
-							g.drawString("Destroy", curMenu.x + 10, curMenu.y + 2 + 18 + g.getFontMetrics().getHeight()); break;
-				case WEAPON: g.drawString("Equip", curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight());
-								g.drawString("Destroy", curMenu.x + 10, curMenu.y + 2 + 18 + g.getFontMetrics().getHeight());break;
-				case ARMOR: g.drawString("Equip", curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight());
-							g.drawString("Destroy", curMenu.x + 10, curMenu.y + 2 + 18 + g.getFontMetrics().getHeight()); break;
-				case JUNK: g.drawString("Destroy", curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight()); break;
-				case MISC: String text = "Use"; if(curItem.getEquip() != null){text = "Equip";}
-					g.drawString(text, curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight());
-					g.drawString("Destroy", curMenu.x + 10, curMenu.y + 2 + 18 + g.getFontMetrics().getHeight()); break;
-				}
+	}
+	
+	public void renderItemMenu(Graphics g){
+		g.setColor(Handler.ITEM_MENU);
+		g.fillRect(curMenu.x, curMenu.y, curMenu.width, curMenu.height);
+		g.setColor(Color.WHITE);
+		g.setFont(new Font("Verdana", Font.PLAIN, 16));
+		if(equipItemMenu){
+			g.drawString("UnEquip", curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight());
+			g.drawString("Destroy", curMenu.x + 10, curMenu.y + 2 + 18 + g.getFontMetrics().getHeight());
+		}else{
+			switch(curItem.getItemType()){
+			case FOOD: g.drawString("Use", curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight());
+						g.drawString("Destroy", curMenu.x + 10, curMenu.y + 2 + 18 + g.getFontMetrics().getHeight()); break;
+			case WEAPON: g.drawString("Equip", curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight());
+							g.drawString("Destroy", curMenu.x + 10, curMenu.y + 2 + 18 + g.getFontMetrics().getHeight());break;
+			case ARMOR: g.drawString("Equip", curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight());
+						g.drawString("Destroy", curMenu.x + 10, curMenu.y + 2 + 18 + g.getFontMetrics().getHeight()); break;
+			case JUNK: g.drawString("Destroy", curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight()); break;
+			case MISC: String text = "Use"; if(curItem.getEquip() != null){text = "Equip";}
+				g.drawString(text, curMenu.x + 10, curMenu.y + g.getFontMetrics().getHeight());
+				g.drawString("Destroy", curMenu.x + 10, curMenu.y + 2 + 18 + g.getFontMetrics().getHeight()); break;
 			}
-			g.setColor(Handler.SELECTION_HIGHLIGHT);
-			g.fillRect(selection.x, selection.y, selection.width, selection.height);
-		} 
-		// Item Info
-		else if(displayItemInfo){
-			g.setColor(Handler.ITEM_MENU);
-			int infox = curPoint.x + 32;
-			int infoy = curPoint.y + 32;
-			g.drawImage(Assets.invItemInfo, infox, infoy, null);
-			ArrayList<String> info = new ArrayList<>();
-			for(String text : curItem.getInfo()){
-				for(String display : Utils.wrapText(text, Assets.invItemInfo.getWidth(), g.getFontMetrics())){
-					info.add(display);
-				}
-			}
-			itemScroll.addStrings(info, new Font("Calibri Bold", Font.PLAIN, 16), g.getFontMetrics(), Color.WHITE);
-			itemScroll.render(g);
 		}
-		// Display Item Name
+		g.setColor(Handler.SELECTION_HIGHLIGHT);
+		g.fillRect(selection.x, selection.y, selection.width, selection.height);		
+	}
+	
+	public void renderItemInfo(Graphics g){
+		g.setColor(Handler.ITEM_MENU);
+		int infox = curPoint.x + 32;
+		int infoy = curPoint.y + 32;
+		g.drawImage(Assets.invItemInfo, infox, infoy, null);
+		ArrayList<String> info = new ArrayList<>();
+		for(String text : curItem.getInfo()){
+			for(String display : Utils.wrapText(text, Assets.invItemInfo.getWidth(), g.getFontMetrics())){
+				info.add(display);
+			}
+		}
+		itemScroll.addStrings(info, new Font("Calibri Bold", Font.PLAIN, 16), g.getFontMetrics(), Color.WHITE);
+		itemScroll.render(g);
+	}
+	
+	public void renderItemName(Graphics g){
 		if(itemName != null && !displayItemMenu){
 			g.setColor(Handler.SELECTION_LOWLIGHT);
 			g.fillRect(mouseInput.getMouseX() - 3, mouseInput.getMouseY() - 17, g.getFontMetrics().stringWidth(itemName) - (g.getFontMetrics().stringWidth(itemName)/5) , g.getFontMetrics().getHeight() + 2);
@@ -229,11 +273,9 @@ public class MenuInventory {
 			g.setFont(new Font("Calibri Bold", Font.BOLD, 16));
 			g.drawString(itemName, mouseInput.getMouseX(), mouseInput.getMouseY());
 		}
-		g.setColor(Color.RED);
-		g.drawRect(playerPortrait.x, playerPortrait.y, playerPortrait.width, playerPortrait.height);
-		g.drawRect(40, 125, 645, 465);
-		g.drawRect(715, 125, 525, 455);
-		// Render Menu Tabs
+	}
+	
+	public void renderMenuTabs(Graphics g){
 		g.setFont(new Font("Verdana", Font.BOLD, 32));
 		String inventory = "Inventory";
 		String questlog = "Quest Log";
@@ -257,8 +299,26 @@ public class MenuInventory {
 			rightClick();
 		}
 		hover();
-		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
-		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
+		keyInput();
+	}
+	
+	public void invItemMenu(Point item, Point mouse){
+		displayItemMenu = true;
+		if(!equipItemMenu){
+			curItem = inv.getItemSlots(curTab)[item.x][item.y];
+		}else{
+			curItem = inv.getItemEquip(item.x);
+		}
+		curMenu = new Rectangle(mouse.x, mouse.y, 80, 50);
+		if(curItem.getItemType() == ItemType.JUNK || curItem.getItemType() == ItemType.MISC){
+			curMenu.height -= 20;
+		}
+		itemMenu = new Rectangle[]{new Rectangle(mouse.x, mouse.y, 80, 25), new Rectangle(mouse.x, mouse.y + 25, 80, 25)};	
+	}
+	
+	public void keyInput(){
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST);
+		HUDManager.MENULAST = System.currentTimeMillis();
 		if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){
 			if(keyInput.esc || keyInput.I || keyInput.L || keyInput.K){
 				displayItemInfo = false;
@@ -266,7 +326,7 @@ public class MenuInventory {
 				displayItemMenu = false;
 				HUDManager.MENUTIMER = 0;
 				if(keyInput.I){
-					handler.setState(States.World);
+					handler.setState(States.GameState);
 					handler.getEntityManager().setPaused(false);
 				}else if(keyInput.L){
 					handler.setState(States.MenuQuest);
@@ -310,20 +370,6 @@ public class MenuInventory {
 				HUDManager.MENUTIMER = 0;
 			}
 		}
-	}
-	
-	public void invItemMenu(Point item, Point mouse){
-		displayItemMenu = true;
-		if(!equipItemMenu){
-			curItem = inv.getItemSlots(curTab)[item.x][item.y];
-		}else{
-			curItem = inv.getItemEquip(item.x);
-		}
-		curMenu = new Rectangle(mouse.x, mouse.y, 80, 50);
-		if(curItem.getItemType() == ItemType.JUNK || curItem.getItemType() == ItemType.MISC){
-			curMenu.height -= 20;
-		}
-		itemMenu = new Rectangle[]{new Rectangle(mouse.x, mouse.y, 80, 25), new Rectangle(mouse.x, mouse.y + 25, 80, 25)};	
 	}
 	
 	public void leftClick(){
@@ -371,11 +417,11 @@ public class MenuInventory {
 								if(displayItemInfo){
 									if(new Rectangle((int)x, (int)y, 1, 1).intersects(itemScroll.getButtonUp())){
 										itemScroll.move(5);
-										System.out.println("UP");
+										System.out.println("Message: MenuInventory_leftClick UP");
 										break outer;
 									}else if(new Rectangle((int)x, (int)y, 1, 1).intersects(itemScroll.getButtonDown())){
 										itemScroll.move(-5);
-										System.out.println("DOWN");
+										System.out.println("Message: MenuInventory_leftClick DOWN");
 										break outer;
 									}
 								}

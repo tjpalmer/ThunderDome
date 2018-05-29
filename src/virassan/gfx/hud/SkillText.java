@@ -37,7 +37,7 @@ public class SkillText {
 		}
 	}
 	
-	public void tick(){
+	public void tick(double delta){
 		if(lifeSpan > 0){
 			lifeSpan -= 0.01F;
 			opacity = Utils.clamp(opacity - 5, 0, 255);

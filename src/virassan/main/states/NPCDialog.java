@@ -6,7 +6,10 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
 
+import virassan.entities.creatures.npcs.Dialog;
 import virassan.entities.creatures.npcs.NPC;
 import virassan.entities.creatures.player.Player;
 import virassan.gfx.Assets;
@@ -16,7 +19,7 @@ import virassan.input.LinkedQueue;
 import virassan.input.MouseInput;
 import virassan.main.Display;
 import virassan.main.Handler;
-import virassan.quests.QuestTracker;
+import virassan.utils.Utils;
 
 public class NPCDialog {
 
@@ -25,35 +28,54 @@ public class NPCDialog {
 	private KeyInput keyInput;
 	private Player player;
 	
-	private ArrayList<QuestTracker> npcQuests;
-	private Rectangle[] questMenu;
-	private Rectangle questMenuSel;
-	private boolean isQuestMenu;
+	private boolean isResponseMenu;
+	private NPC currentNPC;
+	private final ArrayList<Rectangle> responseMenu = new ArrayList<>(Arrays.asList(new Rectangle(10, 120, 200, 57), 
+			new Rectangle(10, 177, 200, 57), new Rectangle(10, 234, 200, 57), new Rectangle(10, 291, 200, 57)));
+	private final Rectangle responseBox = new Rectangle(10, 120, 200, 228);
+	private int respCurSelect;
+	private ArrayList<Dialog> responses;
+	private Dialog nextDialog;
+	private String nextNPC;
+	private Random gen;
 	
 	public NPCDialog(Handler handler) {
 		this.handler = handler;
 		mouseInput = handler.getMouseInput();
 		keyInput = handler.getKeyInput();
+		gen = new Random(37472);
 		
 	}
 
 	public void render(Graphics g){
-		Handler.WORLD.render(g);
-		int x = (int)((Display.WIDTH % 1040) / 2);
-		int y = Display.HEIGHT - 200;
+		Handler.GAMESTATE.render(g);
+		int x = (int)((handler.getGameCamera().getWidth() - Assets.dialogBox.getWidth()) / 2);
+		int y = (int)handler.getGameCamera().getHeight() - 200;
 		g.drawImage(Assets.dialogBox, x, y, null);
 		g.setColor(Color.PINK);
-		g.setFont(new Font("Gentium Basic", Font.PLAIN, 32));
-		if(!isQuestMenu){
-			g.drawString(player.getCurrentNPC().getCurDialog(), x + 15, y + 35);
-			g.drawImage(Assets.button_a, x + 995, y + 105, null);
-		}else{
-			for(QuestTracker quest : npcQuests){
-				g.setColor(Color.PINK);
-				g.drawString(quest.getQuest().getName(), questMenu[npcQuests.indexOf(quest)].x + 15, questMenu[npcQuests.indexOf(quest)].y + g.getFontMetrics().getHeight());
-				g.setColor(Handler.SELECTION_HIGHLIGHT);
-				g.fillRect(questMenuSel.x, questMenuSel.y, questMenuSel.width, questMenuSel.height);
+		g.setFont(new Font("Gentium Basic", Font.PLAIN, 28));
+		try{
+			g.drawString(player.getCurrentNPC().getCurrentDialog().getText(), x + 15, y + 35);
+		}catch(NullPointerException e){
+			g.drawString("", x + 15, y + 35);
+			System.out.println("Error Message: NPCDialog_render current dialog text is null: " + player.getCurrentNPC().getCurrentDialog());
+		}
+		g.drawImage(Assets.button_a, x + 995, y + 105, null);
+		if(isResponseMenu){
+			g.setColor(Color.PINK);
+			g.fillRect(responseBox.x, responseBox.y, responseBox.width, responseBox.height);
+			g.setFont(new Font("Gentium Basic", Font.PLAIN, 18));
+			int mult = 57;
+			int textHeight = 15;
+			for(int i = 0; i < responses.size(); i++){
+				if(i == respCurSelect){
+					g.setColor(Color.BLACK);
+					g.fillRect(responseMenu.get(i).x, responseMenu.get(i).y, responseMenu.get(i).width, responseMenu.get(i).height);
+				}
+				g.setColor(Color.WHITE);
+				g.drawString(responses.get(i).getText(), 10, 177 + (mult * i) - textHeight);
 			}
+			
 		}
 	}
 	
@@ -66,49 +88,81 @@ public class NPCDialog {
 			rightClick();
 		}
 		hover();
-		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST) * delta;
-		HUDManager.MENULAST = System.currentTimeMillis() * (long)delta;
-		NPC curNPC = player.getCurrentNPC();
-		if(!isQuestMenu){
+		HUDManager.MENUTIMER += (System.currentTimeMillis() - HUDManager.MENULAST);
+		HUDManager.MENULAST = System.currentTimeMillis();
+		currentNPC = player.getCurrentNPC();
+		if(!isResponseMenu){
 			if(HUDManager.MENUTIMER > HUDManager.MENUWAIT){
 				if(keyInput.A){
-					if(curNPC.getDialognum() < curNPC.getDialog().size()-1){
-						curNPC.setDialognum(curNPC.getDialognum()+1);
-					}else if(curNPC.getDialognum() >= curNPC.getDialog().size()-1){
-						handler.setState(States.World);
-						curNPC.setInteract(false);
-						curNPC.setDialognum(0);
-						player.setCurrentNPC(null);
-						handler.getEntityManager().setPaused(false);
+					if(nextDialog != null){ //if there is a nextDialog, switch to that
+						
+						/*
+						if(!player.getCurrentNPC().getNPCID().equals(nextNPC)){
+							for(Entity e : handler.getEntityManager().getEntities()){
+								if(e instanceof NPC){
+									System.out.println("Update Message: NPCDialog_tick switching currentNPC: " + nextNPC);
+									player.setCurrentNPC((NPC)e);
+									currentNPC = player.getCurrentNPC();
+								}
+							}
+						}
+						*/
+						
+						setCurrentDialog();
+					}else if(nextDialog == null){ //if there is no nextDialog, close out of interaction with the NPC
+						closeNPCDialog();
 					}
 					HUDManager.MENUTIMER = 0;
 				}
 			}
+		}else{
+			// isResponseMenu is TRUE
+			
 		}
 	}
 	
 	public void leftClick(){
 		LinkedQueue clicks = mouseInput.getLeftClicks();
-		if(isQuestMenu){
-			//TODO: use the mouse for the questMenu
-				if(clicks.element() != null){
-					outer :{
-						while(clicks.element() != null){
-							Point head = clicks.poll().getObject();
-							double x = head.getX();
-							double y = head.getY();
-							//TODO: do a for loop of the size of npcQuests and figure out its Rectangle
-							for(int i = 0; i < questMenu.length; i++){
-								if(new Rectangle((int)x, (int)y, 1, 1).intersects(questMenu[i])){
-									player.getCurrentNPC().setDialog(npcQuests.get(i));
-									isQuestMenu = false;
+		if(isResponseMenu){
+			if(clicks.element() != null){
+				outer :{
+					while(clicks.element() != null){
+						Point head = clicks.poll().getObject();
+						double x = head.getX();
+						double y = head.getY();
+						for(int i = 0; i < responseMenu.size(); i++){
+							if(mouseInput.getMouseBounds().intersects(responseMenu.get(i))){
+								responses.get(i).run();
+								if(nextDialog != null){ //if there is a nextDialog, switch to that
+									
+									/*
+									if(!player.getCurrentNPC().getNPCID().equals(nextNPC)){
+										for(Entity e : handler.getEntityManager().getEntities()){
+											if(e instanceof NPC){
+												System.out.println("Update Message: NPCDialog_leftClick switching currentNPC: " + nextNPC);
+												player.setCurrentNPC((NPC)e);
+												currentNPC = player.getCurrentNPC();
+											}
+										}
+									}
+									*/
+									
+									isResponseMenu = false;
+									setCurrentDialog();
 									break outer;
+								}else{
+									System.out.println("Message: NPCDialog_leftClick nextDialog is: " + nextDialog);
 								}
+							}else{
+								//System.out.println("Message: NPCDialog_leftClick does not intersect: " + mouseInput.getMouseBounds() + "mouse , " + responseMenu.get(i) + "responseMenu rect");
 							}
 						}
 					}
 				}
 			}
+		}else{
+			// isResponseMenu is false
+		}
 	}
 	
 	public void rightClick(){
@@ -119,10 +173,11 @@ public class NPCDialog {
 	}
 	
 	public void hover(){
-		if(isQuestMenu){
-			for(Rectangle rect : questMenu){
+		if(isResponseMenu){
+			for(Rectangle rect : responseMenu){
 				if(mouseInput.getMouseBounds().intersects(rect)){
-					questMenuSel = rect;
+					//System.out.println("Message: NPCDialog_hover intersects: " + mouseInput.getMouseBounds() + "mouse , " + rect + "responseMenu rect");
+					respCurSelect = responseMenu.indexOf(rect);
 				}
 			}
 		}
@@ -131,42 +186,117 @@ public class NPCDialog {
 	public void NPCInteract(NPC entity){
 		player = handler.getPlayer();
 		player.setCurrentNPC(entity);
+		currentNPC = player.getCurrentNPC();
 		int playerDist = (int)(Math.sqrt(Math.pow(player.getX() - entity.getX(), 2)+Math.pow(player.getY() - entity.getY(),2)));
 		if(playerDist <= entity.getInteractDist()){
 			entity.setInteract(true);
-			npcQuests = new ArrayList<>();
-			ArrayList<QuestTracker> active = handler.getPlayer().getQuestLog().getActive();
-			for(QuestTracker q : entity.getQuests()){
-				if(active.size() > 0){
-					for(QuestTracker a : active){
-						if(a.getQuest() == q.getQuest()){
-							npcQuests.add(a);
+			ArrayList<Dialog> possibleDia = new ArrayList<>();
+			Dialog curDia = new Dialog();
+			if(player.isNPCMet(entity.getNPCID())){
+				
+				for(Dialog d : entity.getDialog()){
+					if(d.isMetReq()){
+						if(!d.getReqs().isEmpty()){
+							if(d.areReqsMet()){
+								possibleDia.add(d);
+							}
 						}
 					}
 				}
-			}
-			if(!npcQuests.isEmpty()){
-				if(npcQuests.size() > 1){
-					//TODO: choose which quest to talk about - make a list
-					questMenu = new Rectangle[npcQuests.size()];
-					int x = 300;
-					int y = Display.HEIGHT - 190;
-					for(int i = 0; i < questMenu.length; i++){
-						if(i != 0 && i%2 == 0){
-							x += 255;
-						}
-						questMenu[i] = new Rectangle(x, y, 250, 50);
-						y += 55;
-					}
-					questMenuSel = questMenu[0];
-					isQuestMenu = true;
+				int bounds = (Utils.clamp(possibleDia.size()-1, 0, possibleDia.size()-1));
+				int ran = 0;
+				if(bounds > 0){
+					ran = gen.nextInt(bounds);
+				}
+				if(possibleDia.isEmpty()){
+					closeNPCDialog();
 				}else{
-					entity.setDialog(npcQuests.get(0));
+					curDia = possibleDia.get(ran);
 				}
 			}else{
-				entity.setDialog();
+				int bounds = (Utils.clamp(player.getCurrentNPC().getDefaultDialog().size()-1, 0, player.getCurrentNPC().getDefaultDialog().size()-1));
+				int ran = 0;
+				if(bounds > 0){
+					ran = gen.nextInt(bounds);
+				}
+				if(player.getCurrentNPC().getDefaultDialog().isEmpty()){
+					System.out.println("Error Message: NPCDialog_NPCInteract npc defaultDialog array is somehow empty");
+				}else{
+					curDia = player.getCurrentNPC().getDefaultDialog().get(ran);
+				}
+				player.setNPCMet(entity.getNPCID());
 			}
+			setInteractDialog(curDia);
 			handler.getEntityManager().setPaused(true);
 		}
 	}
+	
+	public void setInteractDialog(Dialog dialog){
+		if(dialog.getText().equals("")){
+			dialog.run();
+			currentNPC.setCurrentDialog(nextDialog);
+		}else{
+			currentNPC.setCurrentDialog(dialog);
+			nextDialog = null;
+			currentNPC.getCurrentDialog().run();
+		}
+		if(dialog.getText() == null){
+			if(nextDialog != null){
+				setInteractDialog(nextDialog);
+			}
+		}
+		if(!dialog.getResponses().isEmpty()){
+			ArrayList<Dialog> resps = new ArrayList<>();
+			for(Dialog r : dialog.getResponses()){
+				if(r != null){
+					resps.add(r);
+				}
+			}
+			responses = resps;
+			respCurSelect = 0;
+			isResponseMenu = true;
+		}
+	}
+	
+	public void setCurrentDialog(){
+		setInteractDialog(nextDialog);
+	}
+	
+	public Dialog getDialog(String dialogID){
+		for(Dialog d : player.getCurrentNPC().getDialog()){
+			if(d.getDIALOG_ID().equals(dialogID)){
+				return d;
+			}
+		}
+		System.out.println("Error Message: NPCDialog_getDialog dialog not found for current NPC");
+		return null;
+	}
+	
+	public void setNextDialog(String text){
+		nextDialog =  new Dialog(text);
+	}
+	
+	public void setNextDialog(Dialog next){
+		nextDialog = next;
+	}
+	
+	public Dialog getNextDialog(){
+		return nextDialog;
+	}
+	
+	public void setNextNPC(String npcID){
+		nextNPC = npcID;
+	}
+	
+	public Dialog getCurrentDialog(){
+		return currentNPC.getCurrentDialog();
+	}
+	
+	public void closeNPCDialog(){
+		currentNPC.setInteract(false);
+		player.setCurrentNPC(null);
+		handler.getEntityManager().setPaused(false);
+		handler.setState(States.GameState);
+	}
+	
 }
